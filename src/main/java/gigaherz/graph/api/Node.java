@@ -10,8 +10,15 @@ public class Node
     // Thing(s) attached to this node
     final IGraphThing thing;
 
-    public Graph getOwner() { return owner; }
-    public IGraphThing getThing() { return thing; }
+    public Graph getOwner()
+    {
+        return owner;
+    }
+
+    public IGraphThing getThing()
+    {
+        return thing;
+    }
 
     public Node(Graph owner, IGraphThing thing)
     {

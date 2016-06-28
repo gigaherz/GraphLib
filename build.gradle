@@ -12,7 +12,9 @@ buildscript {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
     }
 }
+
 apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'maven-publish'
 
 version = "1.0"
 group= "gigaherz.graph" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
@@ -23,6 +25,12 @@ minecraft {
     runDir = "run"
 
     mappings = "snapshot_20160518"
+}
+
+compileJava {
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+    options.encoding = 'UTF-8'
 }
 
 sourceSets {
@@ -55,3 +63,20 @@ processResources
         exclude 'mcmod.info'
     }
 }
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            artifact sourceJar
+        }
+    }
+
+    repositories {
+        maven {
+            url "$buildDir/repo"
+        }
+    }
+}
+

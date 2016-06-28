@@ -1,24 +1,24 @@
 package gigaherz.graph.api;
 
 import com.google.common.collect.*;
-import gigaherz.graph.api.test.DebugGraphThing;
 
-import javax.vecmath.Vector3d;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Graph
 {
     private static int lastUid = 0;
     private final int graphUid = ++lastUid;
 
+    int getGraphUid()
+    {
+        return graphUid;
+    }
+
     final Set<Node> nodeList = Sets.newHashSet();
     final Multimap<Node, Node> neighbours = HashMultimap.create();
     final Multimap<Node, Node> reverseNeighbours = HashMultimap.create();
     final Map<IGraphThing, Node> things = Maps.newHashMap();
-
-    public int getGraphUid() { return graphUid; }
 
     public void addThing(IGraphThing thing, Iterable<IGraphThing> neighbours)
     {
@@ -43,7 +43,7 @@ public class Graph
     public void addNeighours(IGraphThing thing, Iterable<IGraphThing> others)
     {
         Node node = things.get(thing);
-        for(IGraphThing neighbour : others)
+        for (IGraphThing neighbour : others)
         {
             Graph g = neighbour.getGraph();
 
@@ -104,7 +104,7 @@ public class Graph
 
         Set<Node> neighs = Sets.newHashSet(neighbours.get(node));
         neighs.addAll(reverseNeighbours.get(node));
-        for(Object n : neighs)
+        for (Object n : neighs)
         {
             neighbours.remove(n, node);
             reverseNeighbours.remove(node, n);
@@ -122,7 +122,7 @@ public class Graph
 
     private void splitAfterRemoval()
     {
-        if(nodeList.size() == 0)
+        if (nodeList.size() == 0)
             return;
 
         Set<Node> remaining = Sets.newHashSet(nodeList);
@@ -136,12 +136,12 @@ public class Graph
 
         // First mark the ones that will remain in this graph
         // so that there are only new graphs created if needed
-        while(succ.size() > 0)
+        while (succ.size() > 0)
         {
             Node c = succ.poll();
-            for(Object o : neighbours.get(c))
+            for (Object o : neighbours.get(c))
             {
-                Node n = (Node)o;
+                Node n = (Node) o;
 
                 if (!seen.contains(n))
                 {
@@ -150,9 +150,9 @@ public class Graph
                     remaining.remove(n);
                 }
             }
-            for(Object o : reverseNeighbours.get(c))
+            for (Object o : reverseNeighbours.get(c))
             {
-                Node n = (Node)o;
+                Node n = (Node) o;
 
                 if (!seen.contains(n))
                 {
@@ -164,7 +164,7 @@ public class Graph
         }
 
         // If anything remains unseen, it means it's on a disconnected subgraph
-        while(remaining.size() > 0)
+        while (remaining.size() > 0)
         {
             node = remaining.iterator().next();
             succ.add(node);
@@ -172,12 +172,12 @@ public class Graph
             remaining.remove(node);
 
             Graph newGraph = new Graph();
-            while(succ.size() > 0)
+            while (succ.size() > 0)
             {
                 Node c = succ.poll();
-                for(Object o : neighbours.get(c))
+                for (Object o : neighbours.get(c))
                 {
-                    Node n = (Node)o;
+                    Node n = (Node) o;
 
                     if (!seen.contains(n))
                     {
@@ -186,9 +186,9 @@ public class Graph
                         remaining.remove(n);
                     }
                 }
-                for(Object o : reverseNeighbours.get(c))
+                for (Object o : reverseNeighbours.get(c))
                 {
-                    Node n = (Node)o;
+                    Node n = (Node) o;
 
                     if (!seen.contains(n))
                     {
@@ -223,8 +223,8 @@ public class Graph
         neighbours.putAll(graph.neighbours);
         reverseNeighbours.putAll(graph.reverseNeighbours);
 
-        for(Node n : graph.nodeList)
-            n.getThing().setGraph(this);
+        for (Node n : graph.nodeList)
+        { n.getThing().setGraph(this); }
 
         verify();
     }
@@ -233,15 +233,15 @@ public class Graph
     {
         Set<Graph> otherGraphs = Sets.newHashSet();
 
-        for(IGraphThing neighbour : neighbours)
+        for (IGraphThing neighbour : neighbours)
         {
             Graph otherGraph = neighbour.getGraph();
-            if(otherGraph != null && !otherGraphs.contains(otherGraph))
+            if (otherGraph != null && !otherGraphs.contains(otherGraph))
                 otherGraphs.add(otherGraph);
         }
 
         Graph target;
-        if(otherGraphs.size() > 0)
+        if (otherGraphs.size() > 0)
             target = otherGraphs.iterator().next();
         else
             target = new Graph();
@@ -269,9 +269,9 @@ public class Graph
 
     private void verify()
     {
-        for(Node node : nodeList)
+        for (Node node : nodeList)
         {
-            for(Node other : neighbours.get(node))
+            for (Node other : neighbours.get(node))
             {
                 if (!nodeList.contains(other))
                 {
@@ -285,7 +285,7 @@ public class Graph
             }
         }
 
-        for(Node other : things.values())
+        for (Node other : things.values())
         {
             if (!nodeList.contains(other))
             {

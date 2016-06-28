@@ -1,4 +1,4 @@
-package gigaherz.graph.api.test;
+package gigaherz.graph.api;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -34,7 +34,7 @@ public class BlockNetworkTest extends BlockRegistered
     public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn)
     {
         super.neighborChanged(state, worldIn, pos, blockIn);
-        TileNetworkTest teSelf = (TileNetworkTest)worldIn.getTileEntity(pos);
+        TileNetworkTest teSelf = (TileNetworkTest) worldIn.getTileEntity(pos);
         teSelf.updateNeighbours();
     }
 
@@ -42,7 +42,7 @@ public class BlockNetworkTest extends BlockRegistered
     public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor)
     {
         super.onNeighborChange(world, pos, neighbor);
-        TileNetworkTest teSelf = (TileNetworkTest)world.getTileEntity(pos);
+        TileNetworkTest teSelf = (TileNetworkTest) world.getTileEntity(pos);
         teSelf.updateNeighbours();
     }
 

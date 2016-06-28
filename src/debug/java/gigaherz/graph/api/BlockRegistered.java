@@ -1,4 +1,4 @@
-package gigaherz.graph.api.test;
+package gigaherz.graph.api;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.MapColor;

@@ -1,8 +1,6 @@
-package gigaherz.graph.api.test;
+package gigaherz.graph.api;
 
 import com.google.common.collect.Lists;
-import gigaherz.graph.api.Graph;
-import gigaherz.graph.api.IGraphThing;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -14,7 +12,10 @@ public class TileNetworkTest extends TileEntity implements ITickable
 {
     DebugGraphThing networkHandler = new DebugGraphThing();
 
-    public IGraphThing getNetworkHandler() { return networkHandler; }
+    public IGraphThing getNetworkHandler()
+    {
+        return networkHandler;
+    }
 
     boolean firstUpdate = true;
 
@@ -23,14 +24,14 @@ public class TileNetworkTest extends TileEntity implements ITickable
     {
         super.validate();
 
-        if(!firstUpdate)
+        if (!firstUpdate)
             init();
     }
 
     @Override
     public void update()
     {
-        if(firstUpdate)
+        if (firstUpdate)
         {
             firstUpdate = false;
             init();
@@ -40,13 +41,13 @@ public class TileNetworkTest extends TileEntity implements ITickable
     private void init()
     {
         List<IGraphThing> neighbours = Lists.newArrayList();
-        for(EnumFacing f : EnumFacing.VALUES)
+        for (EnumFacing f : EnumFacing.VALUES)
         {
             TileEntity teOther = worldObj.getTileEntity(pos.offset(f));
-            if(!(teOther instanceof TileNetworkTest))
+            if (!(teOther instanceof TileNetworkTest))
                 continue;
-            IGraphThing thingOther = ((TileNetworkTest)teOther).getNetworkHandler();
-            if(thingOther.getGraph() != null)
+            IGraphThing thingOther = ((TileNetworkTest) teOther).getNetworkHandler();
+            if (thingOther.getGraph() != null)
                 neighbours.add(thingOther);
         }
 
@@ -77,7 +78,7 @@ public class TileNetworkTest extends TileEntity implements ITickable
                 if (!(teOther instanceof TileNetworkTest))
                     continue;
                 IGraphThing thingOther = ((TileNetworkTest) teOther).getNetworkHandler();
-                if(thingOther.getGraph() != null)
+                if (thingOther.getGraph() != null)
                     neighbours.add(thingOther);
             }
 

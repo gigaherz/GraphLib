@@ -1,4 +1,4 @@
-package gigaherz.graph.api.test;
+package gigaherz.graph.api;
 
 import gigaherz.graph.api.Graph;
 import gigaherz.graph.api.IGraphThing;
@@ -10,6 +10,11 @@ public class DebugGraphThing implements IGraphThing
     private static int lastUid = 0;
     private final int uid = ++lastUid;
 
+    int getUid()
+    {
+        return uid;
+    }
+
     private Graph graph = null;
     private Vector3d position = null;
 
@@ -20,7 +25,7 @@ public class DebugGraphThing implements IGraphThing
     }
 
     @Override
-    public  void setGraph(Graph g)
+    public void setGraph(Graph g)
     {
         graph = g;
     }
@@ -33,10 +38,5 @@ public class DebugGraphThing implements IGraphThing
     public void setPosition(Vector3d position)
     {
         this.position = position;
-    }
-
-    public int getUid()
-    {
-        return uid;
     }
 }
