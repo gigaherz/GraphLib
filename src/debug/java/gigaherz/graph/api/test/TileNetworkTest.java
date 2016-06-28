@@ -2,17 +2,17 @@ package gigaherz.graph.api.test;
 
 import com.google.common.collect.Lists;
 import gigaherz.graph.api.Graph;
-import gigaherz.graph.api.GraphThing;
 import gigaherz.graph.api.IGraphThing;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 
+import javax.vecmath.Vector3d;
 import java.util.List;
 
 public class TileNetworkTest extends TileEntity implements ITickable
 {
-    IGraphThing networkHandler = new GraphThing();
+    DebugGraphThing networkHandler = new DebugGraphThing();
 
     public IGraphThing getNetworkHandler() { return networkHandler; }
 
@@ -51,6 +51,8 @@ public class TileNetworkTest extends TileEntity implements ITickable
         }
 
         Graph.integrate(networkHandler, neighbours);
+
+        networkHandler.setPosition(new Vector3d(pos.getX(), pos.getY(), pos.getZ()));
     }
 
     @Override

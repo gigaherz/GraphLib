@@ -1,5 +1,6 @@
 package gigaherz.graph.api.test;
 
+import gigaherz.graph.api.IGraphThing;
 import mcp.mobius.waila.api.IWailaConfigHandler;
 import mcp.mobius.waila.api.IWailaDataAccessor;
 import mcp.mobius.waila.api.IWailaDataProvider;
@@ -45,11 +46,13 @@ public class WailaProviders
         public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor, IWailaConfigHandler config)
         {
             TileNetworkTest network = (TileNetworkTest) accessor.getTileEntity();
+            IGraphThing thing = network.getNetworkHandler();
+
             NBTTagCompound tag = accessor.getNBTData();
 
             currenttip.add("The graph ID is only for debugging purposes,");
             currenttip.add("the numbers below are " + TextFormatting.WHITE + "SUPPOSED" + TextFormatting.GRAY + " to be different!");
-            currenttip.add(String.format("Client Graph Instance ID: %s", network.getNetworkHandler().getGraph().getGraphUid()));
+            currenttip.add(String.format("Client Graph Instance ID: %s", thing == null ? -1 : thing.getGraph().getGraphUid()));
             currenttip.add(String.format("Server Graph Instance ID: %s", tag.getInteger("graphUid")));
 
             return currenttip;
@@ -65,8 +68,9 @@ public class WailaProviders
         public NBTTagCompound getNBTData(EntityPlayerMP player, TileEntity te, NBTTagCompound tag, World world, BlockPos pos)
         {
             TileNetworkTest network = (TileNetworkTest) te;
+            IGraphThing thing = network.getNetworkHandler();
 
-            tag.setInteger("graphUid", network.getNetworkHandler().getGraph().getGraphUid());
+            tag.setInteger("graphUid", thing == null ? -1 : thing.getGraph().getGraphUid());
 
             return tag;
         }

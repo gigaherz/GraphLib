@@ -1,17 +1,21 @@
 package gigaherz.graph.api;
 
 import com.google.common.collect.*;
+import gigaherz.graph.api.test.DebugGraphThing;
 
+import javax.vecmath.Vector3d;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Graph
 {
     private static int lastUid = 0;
-    private int graphUid = ++lastUid;
+    private final int graphUid = ++lastUid;
 
-    final List<Node> nodeList = Lists.newArrayList();
-    final Multimap<Node, Node> neighbours = ArrayListMultimap.create();
-    final Multimap<Node, Node> reverseNeighbours = ArrayListMultimap.create();
+    final Set<Node> nodeList = Sets.newHashSet();
+    final Multimap<Node, Node> neighbours = HashMultimap.create();
+    final Multimap<Node, Node> reverseNeighbours = HashMultimap.create();
     final Map<IGraphThing, Node> things = Maps.newHashMap();
 
     public int getGraphUid() { return graphUid; }
@@ -30,6 +34,8 @@ public class Graph
         things.put(thing, node);
 
         nodeList.add(node);
+
+        verify();
 
         addNeighours(thing, neighbours);
     }
@@ -55,6 +61,8 @@ public class Graph
             neighbours.put(node, n);
             reverseNeighbours.put(n, node);
         }
+
+        verify();
     }
 
     public void addNeighbour(IGraphThing thing, IGraphThing neighbour)
@@ -64,6 +72,8 @@ public class Graph
 
         neighbours.put(node, n);
         reverseNeighbours.put(n, node);
+
+        verify();
     }
 
     public void removeNeighbour(IGraphThing thing, IGraphThing neighbour)
@@ -72,7 +82,9 @@ public class Graph
         Node other = things.get(neighbour);
 
         neighbours.remove(node, other);
-        reverseNeighbours.remove(node, other);
+        reverseNeighbours.remove(other, node);
+
+        verify();
 
         splitAfterRemoval();
     }
@@ -90,7 +102,8 @@ public class Graph
 
         nodeList.remove(node);
 
-        Object[] neighs = neighbours.get(node).toArray();
+        Set<Node> neighs = Sets.newHashSet(neighbours.get(node));
+        neighs.addAll(reverseNeighbours.get(node));
         for(Object n : neighs)
         {
             neighbours.remove(n, node);
@@ -101,6 +114,8 @@ public class Graph
         }
 
         things.remove(thing);
+
+        verify();
 
         splitAfterRemoval();
     }
@@ -194,7 +209,11 @@ public class Graph
                 c.owner = newGraph;
                 c.getThing().setGraph(newGraph);
             }
+
+            verify();
         }
+
+        verify();
     }
 
     private void mergeWith(Graph graph)
@@ -206,6 +225,8 @@ public class Graph
 
         for(Node n : graph.nodeList)
             n.getThing().setGraph(this);
+
+        verify();
     }
 
     public static void integrate(IGraphThing thing, List<IGraphThing> neighbours)
@@ -226,5 +247,50 @@ public class Graph
             target = new Graph();
 
         target.addThing(thing, neighbours);
+    }
+
+    public Collection<IGraphThing> getThings()
+    {
+        return things.keySet();
+    }
+
+    public Collection<IGraphThing> getNeighbours(IGraphThing thing)
+    {
+        return neighbours.get(things.get(thing)).stream()
+                .map(Node::getThing)
+                .collect(Collectors.toSet());
+    }
+
+    public boolean containsThing(IGraphThing other)
+    {
+        Node node = things.get(other);
+        return node != null && nodeList.contains(node);
+    }
+
+    private void verify()
+    {
+        for(Node node : nodeList)
+        {
+            for(Node other : neighbours.get(node))
+            {
+                if (!nodeList.contains(other))
+                {
+                    throw new IllegalStateException("Graph is broken!");
+                }
+            }
+
+            if (!things.containsKey(node.getThing()))
+            {
+                throw new IllegalStateException("Graph is broken!");
+            }
+        }
+
+        for(Node other : things.values())
+        {
+            if (!nodeList.contains(other))
+            {
+                throw new IllegalStateException("Graph is broken!");
+            }
+        }
     }
 }
