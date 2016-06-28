@@ -28,10 +28,10 @@ minecraft {
 sourceSets {
     debug {
         java {
-            srcDir 'src/test/java'
+            srcDir 'src/debug/java'
         }
         resources {
-            srcDir 'src/test/resources'
+            srcDir 'src/debug/resources'
         }
         compileClasspath += main.output
     }

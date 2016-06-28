@@ -1,4 +1,4 @@
-package com.example.examplemod;
+package gigaherz.graph.api.test;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.MapColor;
@@ -11,14 +11,14 @@ public class BlockRegistered extends Block
     {
         super(blockMaterialIn, blockMapColorIn);
         setRegistryName(name);
-        setUnlocalizedName(ExampleMod.MODID + "." + name);
+        setUnlocalizedName(GraphApiTest.MODID + "." + name);
     }
 
     public BlockRegistered(String name, Material materialIn)
     {
         super(materialIn);
         setRegistryName(name);
-        setUnlocalizedName(ExampleMod.MODID + "." + name);
+        setUnlocalizedName(GraphApiTest.MODID + "." + name);
     }
 
     public ItemBlock createItemBlock()

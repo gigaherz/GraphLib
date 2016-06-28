@@ -1,7 +1,6 @@
-package com.example.examplemod;
+package gigaherz.graph.api.test;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import gigaherz.graph.api.Graph;
 import gigaherz.graph.api.GraphThing;
 import gigaherz.graph.api.IGraphThing;
@@ -10,7 +9,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 
 import java.util.List;
-import java.util.Set;
 
 public class TileNetworkTest extends TileEntity implements ITickable
 {

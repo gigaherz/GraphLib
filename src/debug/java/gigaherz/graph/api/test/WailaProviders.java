@@ -1,4 +1,4 @@
-package com.example.examplemod;
+package gigaherz.graph.api.test;
 
 import mcp.mobius.waila.api.IWailaConfigHandler;
 import mcp.mobius.waila.api.IWailaDataAccessor;

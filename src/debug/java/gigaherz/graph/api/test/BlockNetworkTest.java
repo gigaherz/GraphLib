@@ -1,6 +1,5 @@
-package com.example.examplemod;
+package gigaherz.graph.api.test;
 
-import gigaherz.graph.api.IGraphThing;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;

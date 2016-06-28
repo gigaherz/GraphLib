@@ -1,6 +1,5 @@
-package com.example.examplemod;
+package gigaherz.graph.api.test;
 
-import net.minecraft.init.Blocks;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -8,10 +7,10 @@ import net.minecraftforge.fml.common.event.FMLInterModComms;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
-@Mod(modid = ExampleMod.MODID, version = ExampleMod.VERSION)
-public class ExampleMod
+@Mod(modid = GraphApiTest.MODID, version = GraphApiTest.VERSION)
+public class GraphApiTest
 {
-    public static final String MODID = "examplemod";
+    public static final String MODID = "GraphLib";
     public static final String VERSION = "1.0";
 
     public static BlockRegistered networkTest;
@@ -28,6 +27,6 @@ public class ExampleMod
     @EventHandler
     public void init(FMLInitializationEvent event)
     {
-        FMLInterModComms.sendMessage("Waila", "register", "com.example.examplemod.WailaProviders.callbackRegister");
+        FMLInterModComms.sendMessage("Waila", "register", "WailaProviders.callbackRegister");
     }
 }
