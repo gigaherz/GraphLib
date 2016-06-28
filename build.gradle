@@ -25,6 +25,21 @@ minecraft {
     mappings = "snapshot_20160518"
 }
 
+sourceSets {
+    debug {
+        java {
+            srcDir 'src/test/java'
+        }
+        resources {
+            srcDir 'src/test/resources'
+        }
+        compileClasspath += main.output
+    }
+    main {
+        runtimeClasspath += debug.output
+    }
+}
+
 processResources
 {
     inputs.property "version", project.version
