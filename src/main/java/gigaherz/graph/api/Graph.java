@@ -17,6 +17,12 @@ public class Graph
     }
     // --
 
+    /**
+     * Adds the object to a graph. It will reuse the neighbours' graph,
+     * or create a new one if none found.
+     * @param object The object to add into a graph
+     * @param neighbours The neighbours it will connect to (directed)
+     */
     public static void integrate(GraphObject object, List<GraphObject> neighbours)
     {
         Set<Graph> otherGraphs = Sets.newHashSet();
@@ -42,6 +48,11 @@ public class Graph
     private final Multimap<Node, Node> reverseNeighbours = HashMultimap.create();
     private final Map<GraphObject, Node> objects = Maps.newHashMap();
 
+    /**
+     * Adds an object to the graph, along with some directed edges.
+     * @param object The object to add.
+     * @param neighbours The objects the edges point toward.
+     */
     public void add(GraphObject object, Iterable<GraphObject> neighbours)
     {
         if (object.getGraph() != null)
@@ -62,10 +73,15 @@ public class Graph
         addNeighours(object, neighbours);
     }
 
-    public void addNeighours(GraphObject object, Iterable<GraphObject> others)
+    /**
+     * Adds some directed edges to a node.
+     * @param object The object the edge originates from.
+     * @param neighbours The objects the edges point toward.
+     */
+    public void addNeighours(GraphObject object, Iterable<GraphObject> neighbours)
     {
         Node node = objects.get(object);
-        for (GraphObject neighbour : others)
+        for (GraphObject neighbour : neighbours)
         {
             Graph g = neighbour.getGraph();
 
@@ -80,13 +96,18 @@ public class Graph
 
             Node n = objects.get(neighbour);
 
-            neighbours.put(node, n);
+            this.neighbours.put(node, n);
             reverseNeighbours.put(n, node);
         }
 
         verify();
     }
 
+    /**
+     * Adds a single directed edge.
+     * @param object The object the edge originates from.
+     * @param neighbour The object the edge points toward.
+     */
     public void addNeighbour(GraphObject object, GraphObject neighbour)
     {
         Node node = objects.get(object);
@@ -98,6 +119,11 @@ public class Graph
         verify();
     }
 
+    /**
+     * Removes a single directed edge, if it exists..
+     * @param object The object the edge originates from.
+     * @param neighbour The object the edge points toward.
+     */
     public void removeNeighbour(GraphObject object, GraphObject neighbour)
     {
         Node node = objects.get(object);
@@ -111,6 +137,10 @@ public class Graph
         splitAfterRemoval();
     }
 
+    /**
+     * Removes a node from the graph, along with all the related edges.
+     * @param object The object to remove.
+     */
     public void remove(GraphObject object)
     {
         if (object.getGraph() != this)
@@ -140,6 +170,41 @@ public class Graph
         verify();
 
         splitAfterRemoval();
+    }
+
+    /**
+     * Obtains the list of objects representing the nodes in the graph.
+     * @return The objects from the graph.
+     */
+    public Collection<GraphObject> getObjects()
+    {
+        return ImmutableSet.copyOf(objects.keySet());
+    }
+
+    /**
+     * Obtains the neighbouring objects that the object connects to.
+     * @param object The object for which to get the neighbours.
+     * @return The neighbouring objects.
+     */
+    public Collection<GraphObject> getNeighbours(GraphObject object)
+    {
+        Set<GraphObject> others = Sets.newHashSet();
+        for (Node n : neighbours.get(objects.get(object)))
+        {
+            others.add(n.getObject());
+        }
+        return ImmutableSet.copyOf(others);
+    }
+
+    /**
+     * Checks if the given object is part of the graph.
+     * @param object The object.
+     * @return
+     */
+    public boolean contains(GraphObject object)
+    {
+        Node node = objects.get(object);
+        return node != null && nodeList.contains(node);
     }
 
     private void splitAfterRemoval()
@@ -249,27 +314,6 @@ public class Graph
         { n.getObject().setGraph(this); }
 
         verify();
-    }
-
-    public Collection<GraphObject> getObjects()
-    {
-        return objects.keySet();
-    }
-
-    public Collection<GraphObject> getNeighbours(GraphObject object)
-    {
-        Set<GraphObject> others = Sets.newHashSet();
-        for (Node n : neighbours.get(objects.get(object)))
-        {
-            others.add(n.getObject());
-        }
-        return others;
-    }
-
-    public boolean contains(GraphObject other)
-    {
-        Node node = objects.get(other);
-        return node != null && nodeList.contains(node);
     }
 
     private void verify()
