@@ -31,12 +31,12 @@ public class ClientProxy extends Proxy
     @SubscribeEvent
     public void renderWorldLast(RenderWorldLastEvent event)
     {
-        RayTraceResult object = Minecraft.getMinecraft().objectMouseOver;
+        RayTraceResult hit = Minecraft.getMinecraft().objectMouseOver;
 
-        if (object.typeOfHit != RayTraceResult.Type.BLOCK)
+        if (hit.typeOfHit != RayTraceResult.Type.BLOCK)
             return;
 
-        BlockPos pos = object.getBlockPos();
+        BlockPos pos = hit.getBlockPos();
         TileEntity te = Minecraft.getMinecraft().theWorld.getTileEntity(pos);
 
         if (!(te instanceof TileNetworkTest))
@@ -44,9 +44,9 @@ public class ClientProxy extends Proxy
 
         TileNetworkTest network = (TileNetworkTest) te;
 
-        IGraphThing theThing = network.getNetworkHandler();
+        GraphObject theObject = network.getNetworkHandler();
 
-        Graph graph = theThing.getGraph();
+        Graph graph = theObject.getGraph();
 
         if (graph == null)
             return;
@@ -67,21 +67,21 @@ public class ClientProxy extends Proxy
         vb.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
 
         int color = graph.getGraphUid() * 8191;
-        int r = (color >> 0) & 255;
+        int r = (color) & 255;
         int g = (color >> 8) & 255;
         int b = (color >> 16) & 255;
 
-        for (IGraphThing thing : graph.getThings())
+        for (GraphObject objs : graph.getObjects())
         {
-            Vector3d pos1 = ((DebugGraphThing) thing).getPosition();
-            for (IGraphThing other : graph.getNeighbours(thing))
+            Vector3d pos1 = ((DebugGraphObject) objs).getPosition();
+            for (GraphObject other : graph.getNeighbours(objs))
             {
-                if (!graph.containsThing(other))
+                if (!graph.contains(other))
                 {
-                    System.out.println("Thing error! " + ((DebugGraphThing) other).getUid());
+                    System.out.println("Verify error!");
                 }
 
-                Vector3d pos2 = ((DebugGraphThing) other).getPosition();
+                Vector3d pos2 = ((DebugGraphObject) other).getPosition();
                 vb.pos(pos1.x + 0.5f, pos1.y + 0.5f, pos1.z + 0.5f).color(r, g, b, 255).endVertex();
                 vb.pos(pos2.x + 0.5f, pos2.y + 0.5f, pos2.z + 0.5f).color(r, g, b, 255).endVertex();
             }

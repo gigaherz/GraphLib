@@ -1,6 +1,6 @@
 package gigaherz.graph.api;
 
-public interface IGraphThing
+public interface GraphObject
 {
     Graph getGraph();
 

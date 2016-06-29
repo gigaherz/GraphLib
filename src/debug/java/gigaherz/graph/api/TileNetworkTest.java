@@ -10,9 +10,9 @@ import java.util.List;
 
 public class TileNetworkTest extends TileEntity implements ITickable
 {
-    DebugGraphThing networkHandler = new DebugGraphThing();
+    DebugGraphObject networkHandler = new DebugGraphObject();
 
-    public IGraphThing getNetworkHandler()
+    public GraphObject getNetworkHandler()
     {
         return networkHandler;
     }
@@ -40,13 +40,13 @@ public class TileNetworkTest extends TileEntity implements ITickable
 
     private void init()
     {
-        List<IGraphThing> neighbours = Lists.newArrayList();
+        List<GraphObject> neighbours = Lists.newArrayList();
         for (EnumFacing f : EnumFacing.VALUES)
         {
             TileEntity teOther = worldObj.getTileEntity(pos.offset(f));
             if (!(teOther instanceof TileNetworkTest))
                 continue;
-            IGraphThing thingOther = ((TileNetworkTest) teOther).getNetworkHandler();
+            GraphObject thingOther = ((TileNetworkTest) teOther).getNetworkHandler();
             if (thingOther.getGraph() != null)
                 neighbours.add(thingOther);
         }
@@ -63,7 +63,7 @@ public class TileNetworkTest extends TileEntity implements ITickable
 
         Graph graph = networkHandler.getGraph();
         if (graph != null)
-            graph.removeThing(networkHandler);
+            graph.remove(networkHandler);
     }
 
     public void updateNeighbours()
@@ -71,13 +71,13 @@ public class TileNetworkTest extends TileEntity implements ITickable
         Graph graph = networkHandler.getGraph();
         if (graph != null)
         {
-            List<IGraphThing> neighbours = Lists.newArrayList();
+            List<GraphObject> neighbours = Lists.newArrayList();
             for (EnumFacing f : EnumFacing.VALUES)
             {
                 TileEntity teOther = worldObj.getTileEntity(pos.offset(f));
                 if (!(teOther instanceof TileNetworkTest))
                     continue;
-                IGraphThing thingOther = ((TileNetworkTest) teOther).getNetworkHandler();
+                GraphObject thingOther = ((TileNetworkTest) teOther).getNetworkHandler();
                 if (thingOther.getGraph() != null)
                     neighbours.add(thingOther);
             }

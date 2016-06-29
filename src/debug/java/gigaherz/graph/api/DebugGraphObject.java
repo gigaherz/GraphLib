@@ -1,11 +1,8 @@
 package gigaherz.graph.api;
 
-import gigaherz.graph.api.Graph;
-import gigaherz.graph.api.IGraphThing;
-
 import javax.vecmath.Vector3d;
 
-public class DebugGraphThing implements IGraphThing
+public class DebugGraphObject implements GraphObject
 {
     private static int lastUid = 0;
     private final int uid = ++lastUid;

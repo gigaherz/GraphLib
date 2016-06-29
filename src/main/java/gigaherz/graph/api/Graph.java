@@ -2,11 +2,12 @@ package gigaherz.graph.api;
 
 import com.google.common.collect.*;
 
+import javax.annotation.Nonnull;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Graph
 {
+    // -- Internal: for debugging purposes only
     private static int lastUid = 0;
     private final int graphUid = ++lastUid;
 
@@ -14,41 +15,62 @@ public class Graph
     {
         return graphUid;
     }
+    // --
 
-    final Set<Node> nodeList = Sets.newHashSet();
-    final Multimap<Node, Node> neighbours = HashMultimap.create();
-    final Multimap<Node, Node> reverseNeighbours = HashMultimap.create();
-    final Map<IGraphThing, Node> things = Maps.newHashMap();
-
-    public void addThing(IGraphThing thing, Iterable<IGraphThing> neighbours)
+    public static void integrate(GraphObject object, List<GraphObject> neighbours)
     {
-        if (thing.getGraph() != null)
-            throw new IllegalArgumentException("The thing is already in another graph.");
+        Set<Graph> otherGraphs = Sets.newHashSet();
 
-        if (things.containsKey(thing))
-            throw new IllegalStateException("The thing is already in this graph.");
+        for (GraphObject neighbour : neighbours)
+        {
+            Graph otherGraph = neighbour.getGraph();
+            if (otherGraph != null && !otherGraphs.contains(otherGraph))
+                otherGraphs.add(otherGraph);
+        }
 
-        Node node = new Node(this, thing);
+        Graph target;
+        if (otherGraphs.size() > 0)
+            target = otherGraphs.iterator().next();
+        else
+            target = new Graph();
 
-        thing.setGraph(this);
-        things.put(thing, node);
+        target.add(object, neighbours);
+    }
+
+    private final Set<Node> nodeList = Sets.newHashSet();
+    private final Multimap<Node, Node> neighbours = HashMultimap.create();
+    private final Multimap<Node, Node> reverseNeighbours = HashMultimap.create();
+    private final Map<GraphObject, Node> objects = Maps.newHashMap();
+
+    public void add(GraphObject object, Iterable<GraphObject> neighbours)
+    {
+        if (object.getGraph() != null)
+            throw new IllegalArgumentException("The object is already in another graph.");
+
+        if (objects.containsKey(object))
+            throw new IllegalStateException("The object is already in this graph.");
+
+        Node node = new Node(this, object);
+
+        object.setGraph(this);
+        objects.put(object, node);
 
         nodeList.add(node);
 
         verify();
 
-        addNeighours(thing, neighbours);
+        addNeighours(object, neighbours);
     }
 
-    public void addNeighours(IGraphThing thing, Iterable<IGraphThing> others)
+    public void addNeighours(GraphObject object, Iterable<GraphObject> others)
     {
-        Node node = things.get(thing);
-        for (IGraphThing neighbour : others)
+        Node node = objects.get(object);
+        for (GraphObject neighbour : others)
         {
             Graph g = neighbour.getGraph();
 
             if (g == null)
-                throw new IllegalArgumentException("The neighbour thing is not in a graph.");
+                throw new IllegalArgumentException("The neighbour object is not in a graph.");
 
             if (g != this)
                 mergeWith(g);
@@ -56,7 +78,7 @@ public class Graph
             if (neighbour.getGraph() != this)
                 throw new IllegalStateException("The graph merging didn't work as expected.");
 
-            Node n = things.get(neighbour);
+            Node n = objects.get(neighbour);
 
             neighbours.put(node, n);
             reverseNeighbours.put(n, node);
@@ -65,10 +87,10 @@ public class Graph
         verify();
     }
 
-    public void addNeighbour(IGraphThing thing, IGraphThing neighbour)
+    public void addNeighbour(GraphObject object, GraphObject neighbour)
     {
-        Node node = things.get(thing);
-        Node n = things.get(neighbour);
+        Node node = objects.get(object);
+        Node n = objects.get(neighbour);
 
         neighbours.put(node, n);
         reverseNeighbours.put(n, node);
@@ -76,10 +98,10 @@ public class Graph
         verify();
     }
 
-    public void removeNeighbour(IGraphThing thing, IGraphThing neighbour)
+    public void removeNeighbour(GraphObject object, GraphObject neighbour)
     {
-        Node node = things.get(thing);
-        Node other = things.get(neighbour);
+        Node node = objects.get(object);
+        Node other = objects.get(neighbour);
 
         neighbours.remove(node, other);
         reverseNeighbours.remove(other, node);
@@ -89,14 +111,14 @@ public class Graph
         splitAfterRemoval();
     }
 
-    public void removeThing(IGraphThing thing)
+    public void remove(GraphObject object)
     {
-        if (thing.getGraph() != this)
-            throw new IllegalArgumentException("The thing is not of this graph.");
+        if (object.getGraph() != this)
+            throw new IllegalArgumentException("The object is not of this graph.");
 
-        thing.setGraph(null);
+        object.setGraph(null);
 
-        Node node = things.get(thing);
+        Node node = objects.get(object);
         if (node == null)
             throw new IllegalStateException("The graph is broken.");
 
@@ -113,7 +135,7 @@ public class Graph
             reverseNeighbours.remove(n, node);
         }
 
-        things.remove(thing);
+        objects.remove(object);
 
         verify();
 
@@ -204,10 +226,10 @@ public class Graph
                 newGraph.reverseNeighbours.putAll(c, reverseNeighbours.get(c));
                 this.neighbours.removeAll(c);
                 this.reverseNeighbours.removeAll(c);
-                this.things.remove(c.getThing());
-                newGraph.things.put(c.getThing(), c);
+                this.objects.remove(c.getObject());
+                newGraph.objects.put(c.getObject(), c);
                 c.owner = newGraph;
-                c.getThing().setGraph(newGraph);
+                c.getObject().setGraph(newGraph);
             }
 
             verify();
@@ -219,51 +241,34 @@ public class Graph
     private void mergeWith(Graph graph)
     {
         nodeList.addAll(graph.nodeList);
-        things.putAll(graph.things);
+        objects.putAll(graph.objects);
         neighbours.putAll(graph.neighbours);
         reverseNeighbours.putAll(graph.reverseNeighbours);
 
         for (Node n : graph.nodeList)
-        { n.getThing().setGraph(this); }
+        { n.getObject().setGraph(this); }
 
         verify();
     }
 
-    public static void integrate(IGraphThing thing, List<IGraphThing> neighbours)
+    public Collection<GraphObject> getObjects()
     {
-        Set<Graph> otherGraphs = Sets.newHashSet();
+        return objects.keySet();
+    }
 
-        for (IGraphThing neighbour : neighbours)
+    public Collection<GraphObject> getNeighbours(GraphObject object)
+    {
+        Set<GraphObject> others = Sets.newHashSet();
+        for (Node n : neighbours.get(objects.get(object)))
         {
-            Graph otherGraph = neighbour.getGraph();
-            if (otherGraph != null && !otherGraphs.contains(otherGraph))
-                otherGraphs.add(otherGraph);
+            others.add(n.getObject());
         }
-
-        Graph target;
-        if (otherGraphs.size() > 0)
-            target = otherGraphs.iterator().next();
-        else
-            target = new Graph();
-
-        target.addThing(thing, neighbours);
+        return others;
     }
 
-    public Collection<IGraphThing> getThings()
+    public boolean contains(GraphObject other)
     {
-        return things.keySet();
-    }
-
-    public Collection<IGraphThing> getNeighbours(IGraphThing thing)
-    {
-        return neighbours.get(things.get(thing)).stream()
-                .map(Node::getThing)
-                .collect(Collectors.toSet());
-    }
-
-    public boolean containsThing(IGraphThing other)
-    {
-        Node node = things.get(other);
+        Node node = objects.get(other);
         return node != null && nodeList.contains(node);
     }
 
@@ -279,18 +284,43 @@ public class Graph
                 }
             }
 
-            if (!things.containsKey(node.getThing()))
+            if (!objects.containsKey(node.getObject()))
             {
                 throw new IllegalStateException("Graph is broken!");
             }
         }
 
-        for (Node other : things.values())
+        for (Node other : objects.values())
         {
             if (!nodeList.contains(other))
             {
                 throw new IllegalStateException("Graph is broken!");
             }
+        }
+    }
+
+    private class Node
+    {
+        @Nonnull
+        Graph owner;
+
+        // Object attached to this node
+        final GraphObject object;
+
+        public Graph getOwner()
+        {
+            return owner;
+        }
+
+        public GraphObject getObject()
+        {
+            return object;
+        }
+
+        public Node(Graph owner, GraphObject object)
+        {
+            this.owner = owner;
+            this.object = object;
         }
     }
 }
