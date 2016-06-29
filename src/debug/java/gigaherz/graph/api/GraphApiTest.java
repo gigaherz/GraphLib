@@ -12,7 +12,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 public class GraphApiTest
 {
     public static final String MODID = "GraphLib";
-    public static final String VERSION = "1.0";
+    public static final String VERSION = Constants.API_VERSION;
 
     @SidedProxy(clientSide = "gigaherz.graph.api.ClientProxy", serverSide = "gigaherz.graph.api.Proxy")
     public static Proxy proxy;
