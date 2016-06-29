@@ -40,18 +40,7 @@ public class TileNetworkTest extends TileEntity implements ITickable
 
     private void init()
     {
-        List<GraphObject> neighbours = Lists.newArrayList();
-        for (EnumFacing f : EnumFacing.VALUES)
-        {
-            TileEntity teOther = worldObj.getTileEntity(pos.offset(f));
-            if (!(teOther instanceof TileNetworkTest))
-                continue;
-            GraphObject thingOther = ((TileNetworkTest) teOther).getNetworkHandler();
-            if (thingOther.getGraph() != null)
-                neighbours.add(thingOther);
-        }
-
-        Graph.integrate(networkHandler, neighbours);
+        Graph.integrate(networkHandler, getNeighbours());
 
         networkHandler.setPosition(new Vector3d(pos.getX(), pos.getY(), pos.getZ()));
     }
@@ -66,23 +55,27 @@ public class TileNetworkTest extends TileEntity implements ITickable
             graph.remove(networkHandler);
     }
 
+    private List<GraphObject> getNeighbours()
+    {
+        List<GraphObject> neighbours = Lists.newArrayList();
+        for (EnumFacing f : EnumFacing.VALUES)
+        {
+            TileEntity teOther = worldObj.getTileEntity(pos.offset(f));
+            if (!(teOther instanceof TileNetworkTest))
+                continue;
+            GraphObject thingOther = ((TileNetworkTest) teOther).getNetworkHandler();
+            if (thingOther.getGraph() != null)
+                neighbours.add(thingOther);
+        }
+        return neighbours;
+    }
+
     public void updateNeighbours()
     {
         Graph graph = networkHandler.getGraph();
         if (graph != null)
         {
-            List<GraphObject> neighbours = Lists.newArrayList();
-            for (EnumFacing f : EnumFacing.VALUES)
-            {
-                TileEntity teOther = worldObj.getTileEntity(pos.offset(f));
-                if (!(teOther instanceof TileNetworkTest))
-                    continue;
-                GraphObject thingOther = ((TileNetworkTest) teOther).getNetworkHandler();
-                if (thingOther.getGraph() != null)
-                    neighbours.add(thingOther);
-            }
-
-            graph.addNeighours(networkHandler, neighbours);
+            graph.addNeighours(networkHandler, getNeighbours());
         }
     }
 }

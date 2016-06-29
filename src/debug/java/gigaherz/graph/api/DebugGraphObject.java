@@ -4,14 +4,6 @@ import javax.vecmath.Vector3d;
 
 public class DebugGraphObject implements GraphObject
 {
-    private static int lastUid = 0;
-    private final int uid = ++lastUid;
-
-    int getUid()
-    {
-        return uid;
-    }
-
     private Graph graph = null;
     private Vector3d position = null;
 
