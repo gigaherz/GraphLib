@@ -1,5 +1,7 @@
 # GraphLib
-A simple generic graph library for use in Minecraft Mods' networks
+A simple generic graph library for use in Minecraft Mods' networks.
+
+See [LICENSE.txt](LICENSE.txt) for the usage terms.
 
 # Maven dependency
 
@@ -15,5 +17,4 @@ repositories {
 dependencies {
     deobfCompile "gigaherz.graph:GraphLib:<version>"
 }
-
 ```
