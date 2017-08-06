@@ -17,6 +17,8 @@ public class Graph
     }
     // --
 
+    private Mergeable contextData;
+
     /**
      * Adds the object to a graph. It will reuse the neighbours' graph,
      * or create a new one if none found.
@@ -259,6 +261,8 @@ public class Graph
             remaining.remove(node);
 
             Graph newGraph = new Graph();
+            if (contextData != null)
+                newGraph.contextData = contextData.copy();
             while (succ.size() > 0)
             {
                 Node c = succ.poll();
@@ -313,6 +317,11 @@ public class Graph
         for (Node n : graph.nodeList)
         { n.getObject().setGraph(this); }
 
+        if (contextData != null && graph.contextData != null)
+            contextData = contextData.mergeWith(graph.contextData);
+        else if(graph.contextData != null)
+            contextData = graph.contextData;
+
         verify();
     }
 
@@ -341,6 +350,16 @@ public class Graph
                 throw new IllegalStateException("Graph is broken!");
             }
         }
+    }
+
+    public Mergeable getContextData()
+    {
+        return contextData;
+    }
+
+    public void setContextData(Mergeable contextData)
+    {
+        this.contextData = contextData;
     }
 
     private class Node
