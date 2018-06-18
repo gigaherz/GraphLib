@@ -26,7 +26,7 @@ public class WailaProviders
         }
     }
 
-    @Optional.Interface(modid = "Waila", iface = "mcp.mobius.waila.api.IWailaDataProvider")
+    @Optional.Interface(modid = "waila", iface = "mcp.mobius.waila.api.IWailaDataProvider")
     public static class NetworkTestProvider implements IWailaDataProvider
     {
         @Override
@@ -53,6 +53,7 @@ public class WailaProviders
             currenttip.add("the numbers below are " + TextFormatting.WHITE + "SUPPOSED" + TextFormatting.GRAY + " to be different!");
             currenttip.add(String.format("Client Graph Instance ID: %s", object == null ? -1 : object.getGraph().getGraphUid()));
             currenttip.add(String.format("Server Graph Instance ID: %s", tag.getInteger("graphUid")));
+            currenttip.add(String.format("Shared UID: %s", tag.getInteger("sharedUid")));
 
             return currenttip;
         }
@@ -70,6 +71,7 @@ public class WailaProviders
             GraphObject object = network.getNetworkHandler();
 
             tag.setInteger("graphUid", object == null ? -1 : object.getGraph().getGraphUid());
+            tag.setInteger("sharedUid", object == null ? -1 : object.getGraph().<TileNetworkTest.GraphData>getContextData().getUid());
 
             return tag;
         }

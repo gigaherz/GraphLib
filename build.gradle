@@ -1,5 +1,3 @@
-
-// For those who want the bleeding edge
 buildscript {
     repositories {
         jcenter()
@@ -16,7 +14,7 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'maven-publish'
 
-version = "1.3.1"
+version = "1.4.0"
 group= "gigaherz.graph" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "GraphLib"
 
@@ -28,6 +26,10 @@ minecraft {
 
     replace "@VERSION@", project.version
     replaceIn "Constants.java"
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: '*.jar')
 }
 
 jar {
@@ -45,6 +47,7 @@ sourceSets {
             srcDir 'src/debug/resources'
         }
         compileClasspath += main.output
+        compileClasspath += main.compileClasspath
     }
     main {
         runtimeClasspath += debug.output

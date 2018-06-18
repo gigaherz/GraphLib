@@ -40,9 +40,14 @@ public class TileNetworkTest extends TileEntity implements ITickable
 
     private void init()
     {
-        Graph.integrate(networkHandler, getNeighbours());
+        Graph.integrate(networkHandler, getNeighbours(), (graph) -> new GraphData());
 
         networkHandler.setPosition(new Vector3d(pos.getX(), pos.getY(), pos.getZ()));
+    }
+
+    public int getSharedUid()
+    {
+        return this.networkHandler.getGraph().<GraphData>getContextData().getUid();
     }
 
     @Override
@@ -60,7 +65,7 @@ public class TileNetworkTest extends TileEntity implements ITickable
         List<GraphObject> neighbours = Lists.newArrayList();
         for (EnumFacing f : EnumFacing.VALUES)
         {
-            TileEntity teOther = worldObj.getTileEntity(pos.offset(f));
+            TileEntity teOther = world.getTileEntity(pos.offset(f));
             if (!(teOther instanceof TileNetworkTest))
                 continue;
             GraphObject thingOther = ((TileNetworkTest) teOther).getNetworkHandler();
@@ -76,6 +81,40 @@ public class TileNetworkTest extends TileEntity implements ITickable
         if (graph != null)
         {
             graph.addNeighours(networkHandler, getNeighbours());
+        }
+    }
+
+    public static class GraphData implements Mergeable<GraphData>
+    {
+        private static int sUid = 0;
+
+        private final int uid;
+
+        public GraphData()
+        {
+            uid = ++sUid;
+        }
+
+        public GraphData(int uid)
+        {
+            this.uid = uid;
+        }
+
+        @Override
+        public GraphData mergeWith(GraphData other)
+        {
+            return new GraphData(uid + other.uid);
+        }
+
+        @Override
+        public GraphData copy()
+        {
+            return new GraphData();
+        }
+
+        public int getUid()
+        {
+            return uid;
         }
     }
 }

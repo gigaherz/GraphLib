@@ -3,6 +3,7 @@ package gigaherz.graph.api;
 import com.google.common.collect.*;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 
 public class Graph
@@ -27,6 +28,18 @@ public class Graph
      */
     public static void integrate(GraphObject object, List<GraphObject> neighbours)
     {
+        integrate(object, neighbours, null);
+    }
+
+    /**
+     * Adds the object to a graph. It will reuse the neighbours' graph,
+     * or create a new one if none found.
+     * @param object The object to add into a graph
+     * @param neighbours The neighbours it will connect to (directed)
+     * @param contextDataFactory A provider for the shared data object contained in the graph
+     */
+    public static void integrate(GraphObject object, List<GraphObject> neighbours, @Nullable ContextDataFactory contextDataFactory)
+    {
         Set<Graph> otherGraphs = Sets.newHashSet();
 
         for (GraphObject neighbour : neighbours)
@@ -38,9 +51,15 @@ public class Graph
 
         Graph target;
         if (otherGraphs.size() > 0)
+        {
             target = otherGraphs.iterator().next();
+        }
         else
+        {
             target = new Graph();
+            if (contextDataFactory != null)
+                target.contextData = contextDataFactory.create(target);
+        }
 
         target.add(object, neighbours);
     }
@@ -352,9 +371,10 @@ public class Graph
         }
     }
 
-    public Mergeable getContextData()
+    @SuppressWarnings("unchecked")
+    public <T extends Mergeable<T>> T getContextData()
     {
-        return contextData;
+        return (T)contextData;
     }
 
     public void setContextData(Mergeable contextData)

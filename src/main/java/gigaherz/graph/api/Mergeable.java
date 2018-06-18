@@ -1,7 +1,7 @@
 package gigaherz.graph.api;
 
-public interface Mergeable
+public interface Mergeable<T extends Mergeable>
 {
-    Mergeable mergeWith(Mergeable other);
-    Mergeable copy();
+    T mergeWith(T other);
+    T copy();
 }

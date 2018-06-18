@@ -43,6 +43,6 @@ artifacts {
 }
 
 dependencies {
-    deobfCompile "gigaherz.graph:GraphLib:1.1.1"
+    deobfCompile "gigaherz.graph:GraphLib:1.4.0"
 }
 ```
