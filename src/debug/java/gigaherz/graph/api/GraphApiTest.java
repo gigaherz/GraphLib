@@ -20,9 +20,6 @@ public class GraphApiTest
     public static final String MODID = "graphlibtest";
     public static final String VERSION = Constants.API_VERSION;
 
-    @SidedProxy(clientSide = "gigaherz.graph.api.ClientProxy", serverSide = "gigaherz.graph.api.Proxy")
-    public static Proxy proxy;
-
     public static BlockRegistered networkTest;
 
     @SubscribeEvent
@@ -40,7 +37,7 @@ public class GraphApiTest
                 networkTest = new BlockNetworkTest("block_network_test")
         );
 
-        GameRegistry.registerTileEntity(TileNetworkTest.class, networkTest.getRegistryName().toString());
+        GameRegistry.registerTileEntity(TileNetworkTest.class, networkTest.getRegistryName());
     }
 
     @SubscribeEvent

@@ -8,17 +8,40 @@ import java.util.*;
 
 public class Graph
 {
-    // -- Internal: for debugging purposes only
-    private static int lastUid = 0;
-    private final int graphUid = ++lastUid;
+    // Graph data
+    private final Set<Node> nodeList = Sets.newHashSet();
+    private final Multimap<Node, Node> neighbours = HashMultimap.create();
+    private final Multimap<Node, Node> reverseNeighbours = HashMultimap.create();
+    private final Map<GraphObject, Node> objects = Maps.newHashMap();
 
-    int getGraphUid()
-    {
-        return graphUid;
-    }
-    // --
-
+    /**
+     * Contains an object attached to the graph.
+     * Persisting this information is the responsibility of the user.
+     */
     private Mergeable contextData;
+
+    /**
+     * Returns the assigned context object.
+     * @param <T> The expected type of the contained data
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    @PublicApi
+    public <T extends Mergeable<T>> T getContextData()
+    {
+        return (T)contextData;
+    }
+
+    /**
+     * Assigns a context object attached to the graph.
+     * Persisting this information is the responsibility of the user.
+     * @param contextData The context object
+     */
+    @PublicApi
+    public void setContextData(Mergeable contextData)
+    {
+        this.contextData = contextData;
+    }
 
     /**
      * Adds the object to a graph. It will reuse the neighbours' graph,
@@ -26,6 +49,7 @@ public class Graph
      * @param object The object to add into a graph
      * @param neighbours The neighbours it will connect to (directed)
      */
+    @PublicApi
     public static void integrate(GraphObject object, List<GraphObject> neighbours)
     {
         integrate(object, neighbours, null);
@@ -38,6 +62,7 @@ public class Graph
      * @param neighbours The neighbours it will connect to (directed)
      * @param contextDataFactory A provider for the shared data object contained in the graph
      */
+    @PublicApi
     public static void integrate(GraphObject object, List<GraphObject> neighbours, @Nullable ContextDataFactory contextDataFactory)
     {
         Set<Graph> otherGraphs = Sets.newHashSet();
@@ -64,16 +89,12 @@ public class Graph
         target.add(object, neighbours);
     }
 
-    private final Set<Node> nodeList = Sets.newHashSet();
-    private final Multimap<Node, Node> neighbours = HashMultimap.create();
-    private final Multimap<Node, Node> reverseNeighbours = HashMultimap.create();
-    private final Map<GraphObject, Node> objects = Maps.newHashMap();
-
     /**
      * Adds an object to the graph, along with some directed edges.
      * @param object The object to add.
      * @param neighbours The objects the edges point toward.
      */
+    @PublicApi
     public void add(GraphObject object, Iterable<GraphObject> neighbours)
     {
         if (object.getGraph() != null)
@@ -99,6 +120,7 @@ public class Graph
      * @param object The object the edge originates from.
      * @param neighbours The objects the edges point toward.
      */
+    @PublicApi
     public void addNeighours(GraphObject object, Iterable<GraphObject> neighbours)
     {
         Node node = objects.get(object);
@@ -129,6 +151,7 @@ public class Graph
      * @param object The object the edge originates from.
      * @param neighbour The object the edge points toward.
      */
+    @PublicApi
     public void addNeighbour(GraphObject object, GraphObject neighbour)
     {
         Node node = objects.get(object);
@@ -145,6 +168,7 @@ public class Graph
      * @param object The object the edge originates from.
      * @param neighbour The object the edge points toward.
      */
+    @PublicApi
     public void removeNeighbour(GraphObject object, GraphObject neighbour)
     {
         Node node = objects.get(object);
@@ -162,6 +186,7 @@ public class Graph
      * Removes a node from the graph, along with all the related edges.
      * @param object The object to remove.
      */
+    @PublicApi
     public void remove(GraphObject object)
     {
         if (object.getGraph() != this)
@@ -197,6 +222,7 @@ public class Graph
      * Obtains the list of objects representing the nodes in the graph.
      * @return The objects from the graph.
      */
+    @PublicApi
     public Collection<GraphObject> getObjects()
     {
         return ImmutableSet.copyOf(objects.keySet());
@@ -207,6 +233,7 @@ public class Graph
      * @param object The object for which to get the neighbours.
      * @return The neighbouring objects.
      */
+    @PublicApi
     public Collection<GraphObject> getNeighbours(GraphObject object)
     {
         Set<GraphObject> others = Sets.newHashSet();
@@ -222,11 +249,15 @@ public class Graph
      * @param object The object.
      * @return
      */
+    @PublicApi
     public boolean contains(GraphObject object)
     {
         Node node = objects.get(object);
         return node != null && nodeList.contains(node);
     }
+
+    // ##############################################################################
+    // ## Private helpers
 
     private void splitAfterRemoval()
     {
@@ -369,17 +400,6 @@ public class Graph
                 throw new IllegalStateException("Graph is broken!");
             }
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T extends Mergeable<T>> T getContextData()
-    {
-        return (T)contextData;
-    }
-
-    public void setContextData(Mergeable contextData)
-    {
-        this.contextData = contextData;
     }
 
     private class Node

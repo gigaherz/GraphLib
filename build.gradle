@@ -11,30 +11,37 @@ buildscript {
     }
 }
 
+repositories {
+    maven {url "http://tehnut.info/maven"}
+}
+
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'maven-publish'
 
-version = "1.4.0"
+version = "1.5.0"
 group= "gigaherz.graph" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "GraphLib"
 
 minecraft {
-    version = "1.12.1-14.22.0.2445"
+    version = "1.12.2-14.23.4.2707"
     runDir = "run"
 
-    mappings = "snapshot_20170804"
+    mappings = "snapshot_20180601"
 
     replace "@VERSION@", project.version
     replaceIn "Constants.java"
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: '*.jar')
+    deobfCompile "mcp.mobius.waila:Hwyla:1.8.26-B41_1.12.2"
 }
 
 jar {
     manifest {
-        attributes("Maven-Artifact":"${project.group}:${project.archivesBaseName}:${project.version}")
+        attributes([
+            "Maven-Artifact":"${project.group}:${project.archivesBaseName}:${project.version}",
+            "Timestamp": System.currentTimeMillis()
+        ])
     }
 }
 

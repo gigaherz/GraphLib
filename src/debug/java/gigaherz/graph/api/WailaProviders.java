@@ -44,17 +44,8 @@ public class WailaProviders
         @Override
         public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor, IWailaConfigHandler config)
         {
-            TileNetworkTest network = (TileNetworkTest) accessor.getTileEntity();
-            GraphObject object = network.getNetworkHandler();
-
             NBTTagCompound tag = accessor.getNBTData();
-
-            currenttip.add("The graph ID is only for debugging purposes,");
-            currenttip.add("the numbers below are " + TextFormatting.WHITE + "SUPPOSED" + TextFormatting.GRAY + " to be different!");
-            currenttip.add(String.format("Client Graph Instance ID: %s", object == null ? -1 : object.getGraph().getGraphUid()));
-            currenttip.add(String.format("Server Graph Instance ID: %s", tag.getInteger("graphUid")));
             currenttip.add(String.format("Shared UID: %s", tag.getInteger("sharedUid")));
-
             return currenttip;
         }
 
@@ -69,10 +60,7 @@ public class WailaProviders
         {
             TileNetworkTest network = (TileNetworkTest) te;
             GraphObject object = network.getNetworkHandler();
-
-            tag.setInteger("graphUid", object == null ? -1 : object.getGraph().getGraphUid());
-            tag.setInteger("sharedUid", object == null ? -1 : object.getGraph().<TileNetworkTest.GraphData>getContextData().getUid());
-
+            tag.setInteger("sharedUid", object == null ? -1 : object.getGraph().<DebugGraphData>getContextData().getUid());
             return tag;
         }
     }

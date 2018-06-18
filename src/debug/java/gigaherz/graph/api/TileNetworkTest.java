@@ -6,6 +6,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 
 import javax.vecmath.Vector3d;
+import java.util.Collections;
 import java.util.List;
 
 public class TileNetworkTest extends TileEntity implements ITickable
@@ -40,21 +41,21 @@ public class TileNetworkTest extends TileEntity implements ITickable
 
     private void init()
     {
-        Graph.integrate(networkHandler, getNeighbours(), (graph) -> new GraphData());
+        Graph.integrate(networkHandler, getNeighbours(), (graph) -> new DebugGraphData());
 
         networkHandler.setPosition(new Vector3d(pos.getX(), pos.getY(), pos.getZ()));
     }
 
     public int getSharedUid()
     {
-        return this.networkHandler.getGraph().<GraphData>getContextData().getUid();
+        return this.networkHandler.getGraph().<DebugGraphData>getContextData().getUid();
     }
 
     @Override
     public void invalidate()
     {
         super.invalidate();
-
+        
         Graph graph = networkHandler.getGraph();
         if (graph != null)
             graph.remove(networkHandler);
@@ -81,40 +82,6 @@ public class TileNetworkTest extends TileEntity implements ITickable
         if (graph != null)
         {
             graph.addNeighours(networkHandler, getNeighbours());
-        }
-    }
-
-    public static class GraphData implements Mergeable<GraphData>
-    {
-        private static int sUid = 0;
-
-        private final int uid;
-
-        public GraphData()
-        {
-            uid = ++sUid;
-        }
-
-        public GraphData(int uid)
-        {
-            this.uid = uid;
-        }
-
-        @Override
-        public GraphData mergeWith(GraphData other)
-        {
-            return new GraphData(uid + other.uid);
-        }
-
-        @Override
-        public GraphData copy()
-        {
-            return new GraphData();
-        }
-
-        public int getUid()
-        {
-            return uid;
         }
     }
 }
