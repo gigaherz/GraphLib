@@ -17,7 +17,7 @@ repositories {
 And add the library as a dependency (no need for `deobfCompile` since it doesn't use obfuscated names) 
 ```gradle
 dependencies {
-    compile "gigaherz.graph:GraphLib:1.4.0"
+    compile "gigaherz.graph:GraphLib2:2.0.0"
 }
 ```
 
@@ -36,8 +36,8 @@ configurations {
 Add the dependency also to the embed configuration
 ```gradle
 dependencies {
-    compile "gigaherz.graph:GraphLib:1.4.0"
-    embed "gigaherz.graph:GraphLib:1.4.0"
+    compile "gigaherz.graph:GraphLib2:2.0.0"
+    embed "gigaherz.graph:GraphLib2:2.0.0"
 }
 ```
 

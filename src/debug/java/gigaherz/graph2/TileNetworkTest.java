@@ -1,4 +1,4 @@
-package gigaherz.graph.api;
+package gigaherz.graph2;
 
 import com.google.common.collect.Lists;
 import net.minecraft.tileentity.TileEntity;
@@ -6,7 +6,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 
 import javax.vecmath.Vector3d;
-import java.util.Collections;
 import java.util.List;
 
 public class TileNetworkTest extends TileEntity implements ITickable
@@ -55,7 +54,7 @@ public class TileNetworkTest extends TileEntity implements ITickable
     public void invalidate()
     {
         super.invalidate();
-        
+
         Graph graph = networkHandler.getGraph();
         if (graph != null)
             graph.remove(networkHandler);
@@ -81,7 +80,7 @@ public class TileNetworkTest extends TileEntity implements ITickable
         Graph graph = networkHandler.getGraph();
         if (graph != null)
         {
-            graph.addNeighours(networkHandler, getNeighbours());
+            graph.addDirectedEdges(networkHandler, getNeighbours());
         }
     }
 }

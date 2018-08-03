@@ -1,4 +1,4 @@
-package gigaherz.graph.api;
+package gigaherz.graph2;
 
 public class DebugGraphData implements Mergeable<DebugGraphData>
 {

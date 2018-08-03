@@ -1,10 +1,10 @@
-package gigaherz.graph.api;
+package gigaherz.graph2;
 
 import com.google.common.collect.*;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Supplier;
 
 public class Graph
 {
@@ -13,12 +13,108 @@ public class Graph
     private final Multimap<Node, Node> neighbours = HashMultimap.create();
     private final Multimap<Node, Node> reverseNeighbours = HashMultimap.create();
     private final Map<GraphObject, Node> objects = Maps.newHashMap();
+    private Mergeable contextData;
+
+    @PublicApi
+    public static void connect(GraphObject object1, GraphObject object2)
+    {
+        connect(object1, object2, null);
+    }
+
+    @PublicApi
+    public static void connect(GraphObject object1, GraphObject object2, @Nullable ContextDataFactory contextDataFactory)
+    {
+        connect(object1, object2, Graph::new, contextDataFactory);
+    }
+
+    @PublicApi
+    public static void connect(GraphObject object1, GraphObject object2, Supplier<Graph> graphFactory, @Nullable ContextDataFactory contextDataFactory)
+    {
+        Graph graph1 = object1.getGraph();
+        Graph graph2 = object2.getGraph();
+
+        Graph target = graph1;
+        if (graph1 != null && graph2 != null)
+        {
+            graph1.mergeWith(graph2);
+        }
+        else if(graph1 != null)
+        {
+            graph1.addNode(object2);
+        }
+        else if(graph2 != null)
+        {
+            target = graph2;
+            graph2.addNode(object1);
+        }
+        else
+        {
+            target = graphFactory.get();
+            if (contextDataFactory != null)
+                target.contextData = contextDataFactory.create(target);
+        }
+
+        target.addSingleEdge(object1, object2);
+    }
 
     /**
-     * Contains an object attached to the graph.
-     * Persisting this information is the responsibility of the user.
+     * Adds the object to a graph. It will reuse the neighbours' graph,
+     * or create a new one if none found.
+     * @param object The object to add into a graph
+     * @param neighbours The neighbours it will connect to (directed)
      */
-    private Mergeable contextData;
+    @PublicApi
+    public static void integrate(GraphObject object, List<GraphObject> neighbours)
+    {
+        integrate(object, neighbours, null);
+    }
+
+    /**
+     * Adds the object to a graph. It will reuse the neighbours' graph,
+     * or create a new one if none found.
+     * @param object The object to add into a graph
+     * @param neighbours The neighbours it will connect to (directed)
+     * @param contextDataFactory A provider for the shared data object contained in the graph
+     */
+    @PublicApi
+    public static void integrate(GraphObject object, List<GraphObject> neighbours, @Nullable ContextDataFactory contextDataFactory)
+    {
+        integrate(object, neighbours, Graph::new, contextDataFactory);
+    }
+
+    /**
+     * Adds the object to a graph. It will reuse the neighbours' graph,
+     * or create a new one if none found.
+     * @param object The object to add into a graph
+     * @param neighbours The neighbours it will connect to (directed)
+     * @param contextDataFactory A provider for the shared data object contained in the graph
+     */
+    @PublicApi
+    public static void integrate(GraphObject object, List<GraphObject> neighbours, Supplier<Graph> graphFactory, @Nullable ContextDataFactory contextDataFactory)
+    {
+        Set<Graph> otherGraphs = Sets.newHashSet();
+
+        for (GraphObject neighbour : neighbours)
+        {
+            Graph otherGraph = neighbour.getGraph();
+            if (otherGraph != null)
+                otherGraphs.add(otherGraph);
+        }
+
+        Graph target;
+        if (otherGraphs.size() > 0)
+        {
+            target = otherGraphs.iterator().next();
+        }
+        else
+        {
+            target = graphFactory.get();
+            if (contextDataFactory != null)
+                target.contextData = contextDataFactory.create(target);
+        }
+
+        target.addNodeAndEdges(object, neighbours);
+    }
 
     /**
      * Returns the assigned context object.
@@ -44,58 +140,13 @@ public class Graph
     }
 
     /**
-     * Adds the object to a graph. It will reuse the neighbours' graph,
-     * or create a new one if none found.
-     * @param object The object to add into a graph
-     * @param neighbours The neighbours it will connect to (directed)
-     */
-    @PublicApi
-    public static void integrate(GraphObject object, List<GraphObject> neighbours)
-    {
-        integrate(object, neighbours, null);
-    }
-
-    /**
-     * Adds the object to a graph. It will reuse the neighbours' graph,
-     * or create a new one if none found.
-     * @param object The object to add into a graph
-     * @param neighbours The neighbours it will connect to (directed)
-     * @param contextDataFactory A provider for the shared data object contained in the graph
-     */
-    @PublicApi
-    public static void integrate(GraphObject object, List<GraphObject> neighbours, @Nullable ContextDataFactory contextDataFactory)
-    {
-        Set<Graph> otherGraphs = Sets.newHashSet();
-
-        for (GraphObject neighbour : neighbours)
-        {
-            Graph otherGraph = neighbour.getGraph();
-            if (otherGraph != null && !otherGraphs.contains(otherGraph))
-                otherGraphs.add(otherGraph);
-        }
-
-        Graph target;
-        if (otherGraphs.size() > 0)
-        {
-            target = otherGraphs.iterator().next();
-        }
-        else
-        {
-            target = new Graph();
-            if (contextDataFactory != null)
-                target.contextData = contextDataFactory.create(target);
-        }
-
-        target.add(object, neighbours);
-    }
-
-    /**
      * Adds an object to the graph, along with some directed edges.
+     * The edges must already be part of the graph.
      * @param object The object to add.
      * @param neighbours The objects the edges point toward.
      */
     @PublicApi
-    public void add(GraphObject object, Iterable<GraphObject> neighbours)
+    public void addNodeAndEdges(GraphObject object, Iterable<GraphObject> neighbours)
     {
         if (object.getGraph() != null)
             throw new IllegalArgumentException("The object is already in another graph.");
@@ -112,7 +163,7 @@ public class Graph
 
         verify();
 
-        addNeighours(object, neighbours);
+        addDirectedEdges(object, neighbours);
     }
 
     /**
@@ -121,26 +172,12 @@ public class Graph
      * @param neighbours The objects the edges point toward.
      */
     @PublicApi
-    public void addNeighours(GraphObject object, Iterable<GraphObject> neighbours)
+    public void addDirectedEdges(GraphObject object, Iterable<GraphObject> neighbours)
     {
         Node node = objects.get(object);
         for (GraphObject neighbour : neighbours)
         {
-            Graph g = neighbour.getGraph();
-
-            if (g == null)
-                throw new IllegalArgumentException("The neighbour object is not in a graph.");
-
-            if (g != this)
-                mergeWith(g);
-
-            if (neighbour.getGraph() != this)
-                throw new IllegalStateException("The graph merging didn't work as expected.");
-
-            Node n = objects.get(neighbour);
-
-            this.neighbours.put(node, n);
-            reverseNeighbours.put(n, node);
+            addSingleEdgeInternal(node, neighbour);
         }
 
         verify();
@@ -152,13 +189,11 @@ public class Graph
      * @param neighbour The object the edge points toward.
      */
     @PublicApi
-    public void addNeighbour(GraphObject object, GraphObject neighbour)
+    public void addSingleEdge(GraphObject object, GraphObject neighbour)
     {
         Node node = objects.get(object);
-        Node n = objects.get(neighbour);
 
-        neighbours.put(node, n);
-        reverseNeighbours.put(n, node);
+        addSingleEdgeInternal(node, neighbour);
 
         verify();
     }
@@ -169,7 +204,7 @@ public class Graph
      * @param neighbour The object the edge points toward.
      */
     @PublicApi
-    public void removeNeighbour(GraphObject object, GraphObject neighbour)
+    public void removeSingleEdge(GraphObject object, GraphObject neighbour)
     {
         Node node = objects.get(object);
         Node other = objects.get(neighbour);
@@ -225,7 +260,28 @@ public class Graph
     @PublicApi
     public Collection<GraphObject> getObjects()
     {
-        return ImmutableSet.copyOf(objects.keySet());
+        return Collections.unmodifiableSet(objects.keySet());
+    }
+
+    /**
+     * Obtains the list of objects representing the nodes in the graph.
+     * This version of the method is designed for concurrent graphs,
+     * where it acquires the read lock.
+     * @return
+     */
+    @PublicApi
+    public Collection<GraphObject> acquireObjects()
+    {
+        return getObjects();
+    }
+
+    /**
+     * Releases the read lock on the object list,
+     * for concurrent graphs.
+     */
+    @PublicApi
+    public void releaseObjects()
+    {
     }
 
     /**
@@ -247,7 +303,7 @@ public class Graph
     /**
      * Checks if the given object is part of the graph.
      * @param object The object.
-     * @return
+     * @return True if the graph contains the object as a node
      */
     @PublicApi
     public boolean contains(GraphObject object)
@@ -258,6 +314,41 @@ public class Graph
 
     // ##############################################################################
     // ## Private helpers
+
+    private void addNode(GraphObject object)
+    {
+        if (object.getGraph() != null)
+            throw new IllegalArgumentException("The object is already in another graph.");
+
+        if (objects.containsKey(object))
+            throw new IllegalStateException("The object is already in this graph.");
+
+        Node node = new Node(this, object);
+
+        object.setGraph(this);
+        objects.put(object, node);
+
+        nodeList.add(node);
+    }
+
+    private void addSingleEdgeInternal(Node node, GraphObject neighbour)
+    {
+        Graph g = neighbour.getGraph();
+
+        if (g == null)
+            throw new IllegalArgumentException("The neighbour object is not in a graph.");
+
+        if (g != this)
+            mergeWith(g);
+
+        if (neighbour.getGraph() != this)
+            throw new IllegalStateException("The graph merging didn't work as expected.");
+
+        Node n = objects.get(neighbour);
+
+        this.neighbours.put(node, n);
+        reverseNeighbours.put(n, node);
+    }
 
     private void splitAfterRemoval()
     {
@@ -404,8 +495,7 @@ public class Graph
 
     private class Node
     {
-        @Nonnull
-        Graph owner;
+        private Graph owner;
 
         // Object attached to this node
         final GraphObject object;
