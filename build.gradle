@@ -23,10 +23,10 @@ group= "gigaherz.graph" // http://maven.apache.org/guides/mini/guide-naming-conv
 archivesBaseName = "GraphLib2"
 
 minecraft {
-    version = "1.12.2-14.23.4.2707"
+    version = "1.12.2-14.23.4.2760"
     runDir = "run"
 
-    mappings = "snapshot_20180601"
+    mappings = "stable_39"
 
     replace "@VERSION@", project.version
     replaceIn "Constants.java"
