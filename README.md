@@ -59,6 +59,7 @@ jar {
 ```
 
 # How to shade into a mod
+Don't do this if you are embedding using the dependency extraction system described above.
 
 If you don't already do this, include the shadow plugin
 ```gradle
