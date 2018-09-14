@@ -8,6 +8,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLInterModComms;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
@@ -52,8 +53,8 @@ public class GraphApiTest
     }
 
     @EventHandler
-    public void init(FMLInitializationEvent event)
+    public void preInit(FMLPreInitializationEvent event)
     {
-        FMLInterModComms.sendMessage("waila", "register", "WailaProviders.callbackRegister");
+        FMLInterModComms.sendMessage("waila", "register", "gigaherz.graph2.WailaProviders.callbackRegister");
     }
 }
