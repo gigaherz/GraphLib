@@ -1,4 +1,4 @@
-package gigaherz.graph2;
+package dev.gigaherz.graph3;
 
 import java.lang.annotation.Retention;
 

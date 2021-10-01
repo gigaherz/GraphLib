@@ -1,39 +1,39 @@
-package gigaherz.graph2;
+package dev.gigaherz.graph3;
 
 import com.google.common.collect.*;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Supplier;
 
-public class Graph
+public class Graph<T extends Mergeable<T>>
 {
     // Graph data
-    private final Set<Node> nodeList = Sets.newHashSet();
-    private final Multimap<Node, Node> neighbours = HashMultimap.create();
-    private final Multimap<Node, Node> reverseNeighbours = HashMultimap.create();
-    private final Map<GraphObject, Node> objects = Maps.newHashMap();
-    private Mergeable contextData;
+    private final Set<Node<T>> nodeList = Sets.newHashSet();
+    private final Multimap<Node<T>, Node<T>> neighbours = HashMultimap.create();
+    private final Multimap<Node<T>, Node<T>> reverseNeighbours = HashMultimap.create();
+    private final Map<GraphObject<T>, Node<T>> objects = Maps.newHashMap();
+    private T contextData;
 
     @PublicApi
-    public static void connect(GraphObject object1, GraphObject object2)
+    public static <T extends Mergeable<T>> void connect(GraphObject<T> object1, GraphObject<T> object2)
     {
         connect(object1, object2, null);
     }
 
     @PublicApi
-    public static void connect(GraphObject object1, GraphObject object2, @Nullable ContextDataFactory contextDataFactory)
+    public static <T extends Mergeable<T>> void connect(GraphObject<T> object1, GraphObject<T> object2, @Nullable ContextDataFactory<T> contextDataFactory)
     {
         connect(object1, object2, Graph::new, contextDataFactory);
     }
 
     @PublicApi
-    public static void connect(GraphObject object1, GraphObject object2, Supplier<Graph> graphFactory, @Nullable ContextDataFactory contextDataFactory)
+    public static <T extends Mergeable<T>> void connect(GraphObject<T> object1, GraphObject<T> object2, Supplier<Graph<T>> graphFactory, @Nullable ContextDataFactory<T> contextDataFactory)
     {
-        Graph graph1 = object1.getGraph();
-        Graph graph2 = object2.getGraph();
+        Graph<T> graph1 = object1.getGraph();
+        Graph<T> graph2 = object2.getGraph();
 
-        Graph target = graph1;
+        Graph<T> target = graph1;
         if (graph1 != null && graph2 != null)
         {
             graph1.mergeWith(graph2);
@@ -64,7 +64,7 @@ public class Graph
      * @param neighbours The neighbours it will connect to (directed)
      */
     @PublicApi
-    public static void integrate(GraphObject object, List<GraphObject> neighbours)
+    public static <T extends Mergeable<T>> void integrate(GraphObject<T> object, List<GraphObject<T>> neighbours)
     {
         integrate(object, neighbours, null);
     }
@@ -77,7 +77,7 @@ public class Graph
      * @param contextDataFactory A provider for the shared data object contained in the graph
      */
     @PublicApi
-    public static void integrate(GraphObject object, List<GraphObject> neighbours, @Nullable ContextDataFactory contextDataFactory)
+    public static <T extends Mergeable<T>> void integrate(GraphObject<T> object, List<GraphObject<T>> neighbours, @Nullable ContextDataFactory<T> contextDataFactory)
     {
         integrate(object, neighbours, Graph::new, contextDataFactory);
     }
@@ -90,18 +90,18 @@ public class Graph
      * @param contextDataFactory A provider for the shared data object contained in the graph
      */
     @PublicApi
-    public static void integrate(GraphObject object, List<GraphObject> neighbours, Supplier<Graph> graphFactory, @Nullable ContextDataFactory contextDataFactory)
+    public static <T extends Mergeable<T>> void integrate(GraphObject<T> object, List<GraphObject<T>> neighbours, Supplier<Graph<T>> graphFactory, @Nullable ContextDataFactory<T> contextDataFactory)
     {
-        Set<Graph> otherGraphs = Sets.newHashSet();
+        Set<Graph<T>> otherGraphs = Sets.newHashSet();
 
-        for (GraphObject neighbour : neighbours)
+        for (GraphObject<T> neighbour : neighbours)
         {
-            Graph otherGraph = neighbour.getGraph();
+            Graph<T> otherGraph = neighbour.getGraph();
             if (otherGraph != null)
                 otherGraphs.add(otherGraph);
         }
 
-        Graph target;
+        Graph<T> target;
         if (otherGraphs.size() > 0)
         {
             target = otherGraphs.iterator().next();
@@ -118,14 +118,11 @@ public class Graph
 
     /**
      * Returns the assigned context object.
-     * @param <T> The expected type of the contained data
-     * @return
      */
-    @SuppressWarnings("unchecked")
     @PublicApi
-    public <T extends Mergeable<T>> T getContextData()
+    public T getContextData()
     {
-        return (T)contextData;
+        return contextData;
     }
 
     /**
@@ -134,7 +131,7 @@ public class Graph
      * @param contextData The context object
      */
     @PublicApi
-    public void setContextData(Mergeable contextData)
+    public void setContextData(T contextData)
     {
         this.contextData = contextData;
     }
@@ -146,7 +143,7 @@ public class Graph
      * @param neighbours The objects the edges point toward.
      */
     @PublicApi
-    public void addNodeAndEdges(GraphObject object, Iterable<GraphObject> neighbours)
+    public void addNodeAndEdges(GraphObject<T> object, Iterable<GraphObject<T>> neighbours)
     {
         if (object.getGraph() != null)
             throw new IllegalArgumentException("The object is already in another graph.");
@@ -154,7 +151,7 @@ public class Graph
         if (objects.containsKey(object))
             throw new IllegalStateException("The object is already in this graph.");
 
-        Node node = new Node(this, object);
+        Node<T> node = new Node<>(this, object);
 
         object.setGraph(this);
         objects.put(object, node);
@@ -172,10 +169,10 @@ public class Graph
      * @param neighbours The objects the edges point toward.
      */
     @PublicApi
-    public void addDirectedEdges(GraphObject object, Iterable<GraphObject> neighbours)
+    public void addDirectedEdges(GraphObject<T> object, Iterable<GraphObject<T>> neighbours)
     {
-        Node node = objects.get(object);
-        for (GraphObject neighbour : neighbours)
+        Node<T> node = objects.get(object);
+        for (GraphObject<T> neighbour : neighbours)
         {
             addSingleEdgeInternal(node, neighbour);
         }
@@ -189,9 +186,9 @@ public class Graph
      * @param neighbour The object the edge points toward.
      */
     @PublicApi
-    public void addSingleEdge(GraphObject object, GraphObject neighbour)
+    public void addSingleEdge(GraphObject<T> object, GraphObject<T> neighbour)
     {
-        Node node = objects.get(object);
+        Node<T> node = objects.get(object);
 
         addSingleEdgeInternal(node, neighbour);
 
@@ -204,10 +201,10 @@ public class Graph
      * @param neighbour The object the edge points toward.
      */
     @PublicApi
-    public void removeSingleEdge(GraphObject object, GraphObject neighbour)
+    public void removeSingleEdge(GraphObject<T> object, GraphObject<T> neighbour)
     {
-        Node node = objects.get(object);
-        Node other = objects.get(neighbour);
+        Node<T> node = objects.get(object);
+        Node<T> other = objects.get(neighbour);
 
         neighbours.remove(node, other);
         reverseNeighbours.remove(other, node);
@@ -222,22 +219,22 @@ public class Graph
      * @param object The object to remove.
      */
     @PublicApi
-    public void remove(GraphObject object)
+    public void remove(GraphObject<T> object)
     {
         if (object.getGraph() != this)
             throw new IllegalArgumentException("The object is not of this graph.");
 
         object.setGraph(null);
 
-        Node node = objects.get(object);
+        Node<T> node = objects.get(object);
         if (node == null)
             throw new IllegalStateException("The graph is broken.");
 
         nodeList.remove(node);
 
-        Set<Node> neighs = Sets.newHashSet(neighbours.get(node));
+        Set<Node<T>> neighs = Sets.newHashSet(neighbours.get(node));
         neighs.addAll(reverseNeighbours.get(node));
-        for (Object n : neighs)
+        for (Node<T> n : neighs)
         {
             neighbours.remove(n, node);
             reverseNeighbours.remove(node, n);
@@ -258,7 +255,7 @@ public class Graph
      * @return The objects from the graph.
      */
     @PublicApi
-    public Collection<GraphObject> getObjects()
+    public Collection<GraphObject<T>> getObjects()
     {
         return Collections.unmodifiableSet(objects.keySet());
     }
@@ -267,10 +264,9 @@ public class Graph
      * Obtains the list of objects representing the nodes in the graph.
      * This version of the method is designed for concurrent graphs,
      * where it acquires the read lock.
-     * @return
      */
     @PublicApi
-    public Collection<GraphObject> acquireObjects()
+    public Collection<GraphObject<T>> acquireObjects()
     {
         return getObjects();
     }
@@ -290,10 +286,10 @@ public class Graph
      * @return The neighbouring objects.
      */
     @PublicApi
-    public Collection<GraphObject> getNeighbours(GraphObject object)
+    public Collection<GraphObject<T>> getNeighbours(GraphObject<T> object)
     {
-        Set<GraphObject> others = Sets.newHashSet();
-        for (Node n : neighbours.get(objects.get(object)))
+        Set<GraphObject<T>> others = Sets.newHashSet();
+        for (Node<T> n : neighbours.get(objects.get(object)))
         {
             others.add(n.getObject());
         }
@@ -306,16 +302,16 @@ public class Graph
      * @return True if the graph contains the object as a node
      */
     @PublicApi
-    public boolean contains(GraphObject object)
+    public boolean contains(GraphObject<T> object)
     {
-        Node node = objects.get(object);
+        Node<T> node = objects.get(object);
         return node != null && nodeList.contains(node);
     }
 
     // ##############################################################################
     // ## Private helpers
 
-    private void addNode(GraphObject object)
+    private void addNode(GraphObject<T> object)
     {
         if (object.getGraph() != null)
             throw new IllegalArgumentException("The object is already in another graph.");
@@ -323,7 +319,7 @@ public class Graph
         if (objects.containsKey(object))
             throw new IllegalStateException("The object is already in this graph.");
 
-        Node node = new Node(this, object);
+        Node<T> node = new Node<>(this, object);
 
         object.setGraph(this);
         objects.put(object, node);
@@ -331,9 +327,9 @@ public class Graph
         nodeList.add(node);
     }
 
-    private void addSingleEdgeInternal(Node node, GraphObject neighbour)
+    private void addSingleEdgeInternal(Node<T> node, GraphObject<T> neighbour)
     {
-        Graph g = neighbour.getGraph();
+        Graph<T> g = neighbour.getGraph();
 
         if (g == null)
             throw new IllegalArgumentException("The neighbour object is not in a graph.");
@@ -344,7 +340,7 @@ public class Graph
         if (neighbour.getGraph() != this)
             throw new IllegalStateException("The graph merging didn't work as expected.");
 
-        Node n = objects.get(neighbour);
+        Node<T> n = objects.get(neighbour);
 
         this.neighbours.put(node, n);
         reverseNeighbours.put(n, node);
@@ -355,11 +351,11 @@ public class Graph
         if (nodeList.size() == 0)
             return;
 
-        Set<Node> remaining = Sets.newHashSet(nodeList);
-        Set<Node> seen = Sets.newHashSet();
-        Queue<Node> succ = Queues.newArrayDeque();
+        Set<Node<T>> remaining = Sets.newHashSet(nodeList);
+        Set<Node<T>> seen = Sets.newHashSet();
+        Queue<Node<T>> succ = Queues.newArrayDeque();
 
-        Node node = remaining.iterator().next();
+        Node<T> node = remaining.iterator().next();
         succ.add(node);
         seen.add(node);
         remaining.remove(node);
@@ -368,11 +364,9 @@ public class Graph
         // so that there are only new graphs created if needed
         while (succ.size() > 0)
         {
-            Node c = succ.poll();
-            for (Object o : neighbours.get(c))
+            Node<T> c = succ.poll();
+            for (Node<T> n : neighbours.get(c))
             {
-                Node n = (Node) o;
-
                 if (!seen.contains(n))
                 {
                     seen.add(n);
@@ -380,10 +374,8 @@ public class Graph
                     remaining.remove(n);
                 }
             }
-            for (Object o : reverseNeighbours.get(c))
+            for (Node<T> n : reverseNeighbours.get(c))
             {
-                Node n = (Node) o;
-
                 if (!seen.contains(n))
                 {
                     seen.add(n);
@@ -401,16 +393,14 @@ public class Graph
             seen.add(node);
             remaining.remove(node);
 
-            Graph newGraph = new Graph();
+            Graph<T> newGraph = new Graph<>();
             if (contextData != null)
                 newGraph.contextData = contextData.copy();
             while (succ.size() > 0)
             {
-                Node c = succ.poll();
-                for (Object o : neighbours.get(c))
+                Node<T> c = succ.poll();
+                for (Node<T> n : neighbours.get(c))
                 {
-                    Node n = (Node) o;
-
                     if (!seen.contains(n))
                     {
                         seen.add(n);
@@ -418,10 +408,8 @@ public class Graph
                         remaining.remove(n);
                     }
                 }
-                for (Object o : reverseNeighbours.get(c))
+                for (Node<T> n : reverseNeighbours.get(c))
                 {
-                    Node n = (Node) o;
-
                     if (!seen.contains(n))
                     {
                         seen.add(n);
@@ -448,14 +436,14 @@ public class Graph
         verify();
     }
 
-    private void mergeWith(Graph graph)
+    private void mergeWith(Graph<T> graph)
     {
         nodeList.addAll(graph.nodeList);
         objects.putAll(graph.objects);
         neighbours.putAll(graph.neighbours);
         reverseNeighbours.putAll(graph.reverseNeighbours);
 
-        for (Node n : graph.nodeList)
+        for (Node<T> n : graph.nodeList)
         { n.getObject().setGraph(this); }
 
         if (contextData != null && graph.contextData != null)
@@ -468,9 +456,9 @@ public class Graph
 
     private void verify()
     {
-        for (Node node : nodeList)
+        for (Node<T> node : nodeList)
         {
-            for (Node other : neighbours.get(node))
+            for (Node<T> other : neighbours.get(node))
             {
                 if (!nodeList.contains(other))
                 {
@@ -484,7 +472,7 @@ public class Graph
             }
         }
 
-        for (Node other : objects.values())
+        for (Node<T> other : objects.values())
         {
             if (!nodeList.contains(other))
             {
@@ -493,24 +481,25 @@ public class Graph
         }
     }
 
-    private class Node
+    private static class Node<T extends Mergeable<T>>
     {
-        private Graph owner;
+        private Graph<T> owner;
 
         // Object attached to this node
-        final GraphObject object;
+        private final GraphObject<T> object;
 
-        public Graph getOwner()
+        @PublicApi
+        public Graph<T> getOwner()
         {
             return owner;
         }
 
-        public GraphObject getObject()
+        public GraphObject<T> getObject()
         {
             return object;
         }
 
-        public Node(Graph owner, GraphObject object)
+        public Node(Graph<T> owner, GraphObject<T> object)
         {
             this.owner = owner;
             this.object = object;

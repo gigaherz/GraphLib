@@ -1,26 +1,27 @@
-package gigaherz.graph2;
+package dev.gigaherz.graph3;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class ConcurrentGraph extends Graph
+public class ConcurrentGraph<T extends Mergeable<T>> extends Graph<T>
 {
     private final ReadWriteLock rwLock = new ReentrantReadWriteLock();
     private final Lock readLock = rwLock.readLock();
     private final Lock writeLock = rwLock.writeLock();
 
     @PublicApi
-    public static void connect(GraphObject object1, GraphObject object2)
+    public static <T extends Mergeable<T>> void connect(GraphObject<T> object1, GraphObject<T> object2)
     {
         connect(object1, object2, null);
     }
 
     @PublicApi
-    public static void connect(GraphObject object1, GraphObject object2, @Nullable ContextDataFactory contextDataFactory)
+    public static <T extends Mergeable<T>> void connect(GraphObject<T> object1, GraphObject<T> object2, @Nullable ContextDataFactory<T> contextDataFactory)
     {
         connect(object1, object2, ConcurrentGraph::new, contextDataFactory);
     }
@@ -32,7 +33,7 @@ public class ConcurrentGraph extends Graph
      * @param neighbours The neighbours it will connect to (directed)
      */
     @PublicApi
-    public static void integrate(GraphObject object, List<GraphObject> neighbours)
+    public static <T extends Mergeable<T>> void integrate(GraphObject<T> object, List<GraphObject<T>> neighbours)
     {
         integrate(object, neighbours, null);
     }
@@ -45,18 +46,16 @@ public class ConcurrentGraph extends Graph
      * @param contextDataFactory A provider for the shared data object contained in the graph
      */
     @PublicApi
-    public static void integrate(GraphObject object, List<GraphObject> neighbours, @Nullable ContextDataFactory contextDataFactory)
+    public static <T extends Mergeable<T>> void integrate(GraphObject<T> object, List<GraphObject<T>> neighbours, @Nullable ContextDataFactory<T> contextDataFactory)
     {
         integrate(object, neighbours, ConcurrentGraph::new, contextDataFactory);
     }
 
     /**
      * Returns the assigned context object.
-     * @param <T> The expected type of the contained data
-     * @return
      */
     @Override
-    public <T extends Mergeable<T>> T getContextData()
+    public T getContextData()
     {
         readLock.lock();
         try
@@ -70,7 +69,7 @@ public class ConcurrentGraph extends Graph
     }
 
     @Override
-    public void setContextData(Mergeable contextData)
+    public void setContextData(T contextData)
     {
         writeLock.lock();
         try
@@ -84,7 +83,7 @@ public class ConcurrentGraph extends Graph
     }
 
     @Override
-    public void addNodeAndEdges(GraphObject object, Iterable<GraphObject> neighbours)
+    public void addNodeAndEdges(GraphObject<T> object, Iterable<GraphObject<T>> neighbours)
     {
         writeLock.lock();
         try
@@ -98,7 +97,7 @@ public class ConcurrentGraph extends Graph
     }
 
     @Override
-    public void addDirectedEdges(GraphObject object, Iterable<GraphObject> neighbours)
+    public void addDirectedEdges(GraphObject<T> object, Iterable<GraphObject<T>> neighbours)
     {
         writeLock.lock();
         try
@@ -112,7 +111,7 @@ public class ConcurrentGraph extends Graph
     }
 
     @Override
-    public void addSingleEdge(GraphObject object, GraphObject neighbour)
+    public void addSingleEdge(GraphObject<T> object, GraphObject<T> neighbour)
     {
         writeLock.lock();
         try
@@ -126,7 +125,7 @@ public class ConcurrentGraph extends Graph
     }
 
     @Override
-    public void removeSingleEdge(GraphObject object, GraphObject neighbour)
+    public void removeSingleEdge(GraphObject<T> object, GraphObject<T> neighbour)
     {
         writeLock.lock();
         try
@@ -140,7 +139,7 @@ public class ConcurrentGraph extends Graph
     }
 
     @Override
-    public void remove(GraphObject object)
+    public void remove(GraphObject<T> object)
     {
         writeLock.lock();
         try
@@ -155,12 +154,12 @@ public class ConcurrentGraph extends Graph
 
     @Deprecated
     @Override
-    public Collection<GraphObject> getObjects()
+    public Collection<GraphObject<T>> getObjects()
     {
         return super.getObjects();
     }
 
-    public Collection<GraphObject> acquireObjects()
+    public Collection<GraphObject<T>> acquireObjects()
     {
         readLock.lock();
         return super.getObjects();
@@ -172,7 +171,7 @@ public class ConcurrentGraph extends Graph
     }
 
     @Override
-    public Collection<GraphObject> getNeighbours(GraphObject object)
+    public Collection<GraphObject<T>> getNeighbours(GraphObject<T> object)
     {
         readLock.lock();
         try
@@ -186,7 +185,7 @@ public class ConcurrentGraph extends Graph
     }
 
     @Override
-    public boolean contains(GraphObject object)
+    public boolean contains(GraphObject<T> object)
     {
         readLock.lock();
         try
