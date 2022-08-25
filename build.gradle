@@ -1,7 +1,7 @@
 apply plugin: 'maven-publish'
 apply plugin: 'java'
 
-version = "3.0.2"
+version = "3.0.3"
 group= "dev.gigaherz.graph" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 ext {
     archivesBaseName = "GraphLib3"
@@ -13,6 +13,10 @@ repositories {
 dependencies {
     compileOnly 'org.jetbrains:annotations:20.1.0'
     implementation 'com.google.guava:guava:21.0'
+}
+
+java {
+    withSourcesJar()
 }
 
 jar {
@@ -37,18 +41,25 @@ publishing {
         mavenJava(MavenPublication) {
             artifactId project.archivesBaseName
             from components.java
-
-            //artifact sourceJar
         }
     }
 
     repositories {
-        maven {
-            url "$projectDir/../CommonMaven"
+        if (findProperty("RELEASE") && System.env.giga_maven_host != null) {
+            System.out.println("Remote publish enabled on " + System.env.giga_maven_host)
+            maven {
+                url System.env.giga_maven_host
+                credentials {
+                    username System.env.giga_maven_user
+                    password System.env.giga_maven_password
+                }
+            }
+        }
+        else {
+            System.out.println("Remote publish disabled.")
+            maven {
+                url "$projectDir/../CommonMaven"
+            }
         }
     }
-}
-
-java {
-    withSourcesJar()
 }
