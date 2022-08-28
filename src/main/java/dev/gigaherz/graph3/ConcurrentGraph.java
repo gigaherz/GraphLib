@@ -139,6 +139,20 @@ public class ConcurrentGraph<T extends Mergeable<T>> extends Graph<T>
     }
 
     @Override
+    public void removeNonDirectionalSingleEdge(GraphObject<T> object1, GraphObject<T> object2)
+    {
+        writeLock.lock();
+        try
+        {
+            super.removeNonDirectionalSingleEdge(object1, object2);
+        }
+        finally
+        {
+            writeLock.unlock();
+        }
+    }
+
+    @Override
     public void remove(GraphObject<T> object)
     {
         writeLock.lock();
@@ -177,6 +191,20 @@ public class ConcurrentGraph<T extends Mergeable<T>> extends Graph<T>
         try
         {
             return super.getNeighbours(object);
+        }
+        finally
+        {
+            readLock.unlock();
+        }
+    }
+
+    @Override
+    public Collection<GraphObject<T>> getNonDirectionalNeighbours(GraphObject<T> object)
+    {
+        readLock.lock();
+        try
+        {
+            return super.getNonDirectionalNeighbours(object);
         }
         finally
         {
