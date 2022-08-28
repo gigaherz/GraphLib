@@ -52,6 +52,8 @@ public class Graph<T extends Mergeable<T>>
             target = graphFactory.get();
             if (contextDataFactory != null)
                 target.contextData = contextDataFactory.create(target);
+            target.addNode(object1);
+            target.addNode(object2);
         }
 
         target.addSingleEdge(object1, object2);
