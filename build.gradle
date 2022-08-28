@@ -1,7 +1,7 @@
 apply plugin: 'maven-publish'
 apply plugin: 'java'
 
-version = "3.0.3"
+version = "3.0.4"
 group= "dev.gigaherz.graph" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 ext {
     archivesBaseName = "GraphLib3"
