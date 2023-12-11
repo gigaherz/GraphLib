@@ -198,7 +198,7 @@ public class Graph<T extends Mergeable<T>>
     }
 
     /**
-     * Removes a single directed edge, if it exists..
+     * Removes a single directed edge, if it exists.
      * @param object The object the edge originates from.
      * @param neighbour The object the edge points toward.
      */
@@ -210,6 +210,27 @@ public class Graph<T extends Mergeable<T>>
 
         neighbours.remove(node, other);
         reverseNeighbours.remove(other, node);
+
+        verify();
+
+        splitAfterRemoval();
+    }
+
+    /**
+     * Removes a single non directed edge, if it exists.
+     * @param object1 One end of the edge.
+     * @param object2 The other end of the edge.
+     */
+    @PublicApi
+    public void removeNonDirectionalSingleEdge(GraphObject<T> object1, GraphObject<T> object2)
+    {
+        Node<T> node = objects.get(object1);
+        Node<T> other = objects.get(object2);
+
+        neighbours.remove(node, other);
+        neighbours.remove(other, node);
+        reverseNeighbours.remove(other, node);
+        reverseNeighbours.remove(node, other);
 
         verify();
 
@@ -292,6 +313,21 @@ public class Graph<T extends Mergeable<T>>
     {
         Set<GraphObject<T>> others = Sets.newHashSet();
         for (Node<T> n : neighbours.get(objects.get(object)))
+        {
+            others.add(n.getObject());
+        }
+        return ImmutableSet.copyOf(others);
+    }
+    /**
+     * Obtains the neighbouring objects that the object connects to or the objects that connect to this object.
+     * @param object The object for which to get the neighbours.
+     * @return The neighbouring objects.
+     */
+    @PublicApi
+    public Collection<GraphObject<T>> getNonDirectionalNeighbours(GraphObject<T> object)
+    {
+        Set<GraphObject<T>> others = Sets.newHashSet(getNeighbours(object));
+        for (Node<T> n : reverseNeighbours.get(objects.get(object)))
         {
             others.add(n.getObject());
         }
