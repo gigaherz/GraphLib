@@ -1,5 +1,5 @@
 # GraphLib
-GraphLib is a simple graph library that helps maintain networks of nodes, joining and splitting graphs as necessar.
+GraphLib is a simple graph library that helps maintain networks of nodes, joining and splitting graphs as necessary.
 It was designed for use in Minecraft Mods' networks, but it can be used for any other purpose.
 
 See [LICENSE.txt](LICENSE.txt) for the usage terms.
