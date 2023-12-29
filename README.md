@@ -18,7 +18,7 @@ repositories {
 And add the library as a dependency (no need for deobf) 
 ```gradle
 dependencies {
-    implementation "gigaherz.graph:GraphLib3:3.0.5"
+    implementation "dev.gigaherz.graph:GraphLib3:3.0.5"
 }
 ```
 
