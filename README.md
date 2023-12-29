@@ -1,9 +1,10 @@
 # GraphLib
-A simple generic graph library for use in Minecraft Mods' networks.
+GraphLib is a simple graph library that helps maintain networks of nodes, joining and splitting graphs as necessar.
+It was designed for use in Minecraft Mods' networks, but it can be used for any other purpose.
 
 See [LICENSE.txt](LICENSE.txt) for the usage terms.
 
-# How to add to your `build.gradle`
+# Gradle
 
 Include my maven repository in your gradle
 ```gradle
@@ -14,93 +15,22 @@ repositories {
 }
 ```
 
-And add the library as a dependency (no need for `deobfCompile` since it doesn't use obfuscated names) 
+And add the library as a dependency (no need for deobf) 
 ```gradle
 dependencies {
-    compile "gigaherz.graph:GraphLib2:2.0.0"
+    implementation "gigaherz.graph:GraphLib3:3.0.5"
 }
 ```
 
-# How to embed into a jar to be used by Forge's Dependency Extraction
-This is the **preferred** method in 1.12.2 and onward.
+The library can be [shaded](https://github.com/johnrengelman/shadow) (with relocation) or embedded through jar-in-jar. Refer to the corresponding documentation on the embedding system of your platform for details.
 
-Create a new configuration, I like to call it 'embed'
-```gradle
-configurations {
-    // configuration that holds jars to embed inside the jar
-    embed
-    embed.transitive = false;
-}
-```
+# Usage
 
-Add the dependency also to the embed configuration
-```gradle
-dependencies {
-    compile "gigaherz.graph:GraphLib2:2.0.0"
-    embed "gigaherz.graph:GraphLib2:2.0.0"
-}
-```
+GraphLib starts with the idea of GraphObjects. These are the nodes in the graph. 
 
-Tell gradle to put the embed dependencies in your jar
-```gradle
-jar {
-    into('/META-INF/libraries') {
-        from configurations.embed
-    }
+To build a graph, just connect GraphObjects to other GraphObjects. `Graph.connect` lets you create a single edge, while `Graph.integrate` lets you connect a node to a number of neighbours all at once.
 
-    manifest {
-        attributes([
-            "ContainedDeps": configurations.embed.collect { it.getName() }.join(' '),
-            "Maven-Artifact":"${project.group}:${project.archivesBaseName}:${project.version}",
-            'Timestamp': System.currentTimeMillis()
-        ])
-    }
-}
-```
+The `ConcurrentGraph` class does the same, but using thread-safe logic.
 
-# How to shade into a mod
-Don't do this if you are embedding using the dependency extraction system described above.
+A graph can optionally contain additional data belonging to the network. When present, this data must implement the `Mergeable` interface, which will be used when two networks are joined together.
 
-If you don't already do this, include the shadow plugin
-```gradle
-plugins {
-    id 'com.github.johnrengelman.shadow' version '1.2.3'
-}
-```
-
-Make your jar task have a classifier. The shadow task will be the one without classifier 
-```gradle
-jar {
-    classifier = 'slim'
-}
-```
-
-Create a shadowJar task without classifier (this will be the final jar) 
-```gradle
-shadowJar {
-    classifier = ''
-    dependencies {
-        include(dependency(':GraphLib:'))
-    }
-}
-```
-
-Tell ForgeGradle to reobfuscate the shadowJar task 
-```gradle
-reobf {
-    shadowJar { mappingType = 'SEARGE' }
-}
-
-```
-
-Make your build task run the shadow task first
-```gradle
-tasks.build.dependsOn reobfShadowJar
-```
-
-Finally, tell gradle that you want an artifact for the shadowJar placed in the build output
-```gradle
-artifacts {
-    archives shadowJar
-}
-```
