@@ -435,8 +435,6 @@ public class Graph<T extends Mergeable<T>>
             remaining.remove(node);
 
             Graph<T> newGraph = new Graph<>();
-            if (contextData != null)
-                newGraph.contextData = contextData.copy();
             while (succ.size() > 0)
             {
                 Node<T> c = succ.poll();
@@ -469,6 +467,12 @@ public class Graph<T extends Mergeable<T>>
                 newGraph.objects.put(c.getObject(), c);
                 c.owner = newGraph;
                 c.getObject().setGraph(newGraph);
+            }
+
+            // Split the context across both graphs.
+            if (contextData != null) {
+                newGraph.contextData = contextData.splitFor(newGraph, this);
+                contextData = contextData.splitFor(this, newGraph);
             }
 
             verify();

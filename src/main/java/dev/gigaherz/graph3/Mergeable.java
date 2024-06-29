@@ -3,7 +3,7 @@ package dev.gigaherz.graph3;
 public interface Mergeable<T extends Mergeable<T>>
 {
     T mergeWith(T other);
-    T copy();
+    T splitFor(Graph<T> selfGraph, Graph<T> otherGraph);
 
     @PublicApi
     Dummy DUMMY = new Dummy();
@@ -19,8 +19,7 @@ public interface Mergeable<T extends Mergeable<T>>
         }
 
         @Override
-        public Dummy copy()
-        {
+        public Dummy splitFor(Graph<Dummy> selfGraph, Graph<Dummy> otherGraph) {
             return this;
         }
     }
