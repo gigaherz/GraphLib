@@ -34,9 +34,12 @@ public class Graph<T extends Mergeable<T>>
         Graph<T> graph2 = object2.getGraph();
 
         Graph<T> target = graph1;
-        if (graph1 != null && graph2 != null && graph1 != graph2)
+        if (graph1 != null && graph2 != null)
         {
-            graph1.mergeWith(graph2);
+            if (graph1 != graph2)
+            {
+                graph1.mergeWith(graph2);
+            }
         }
         else if(graph1 != null)
         {
