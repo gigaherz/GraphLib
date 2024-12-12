@@ -389,7 +389,8 @@ public class Graph<T extends Mergeable<T>>
 
     private void splitAfterRemoval()
     {
-        if (nodeList.size() == 0)
+        int nodeCount = nodeList.size();
+        if (nodeCount == 0)
             return;
 
         Set<Node<T>> remaining = Sets.newHashSet(nodeList);
@@ -426,6 +427,8 @@ public class Graph<T extends Mergeable<T>>
             }
         }
 
+        List<Graph<T>> newGraphs = contextData != null ? new ArrayList<>() : null;
+
         // If anything remains unseen, it means it's on a disconnected subgraph
         while (remaining.size() > 0)
         {
@@ -435,6 +438,10 @@ public class Graph<T extends Mergeable<T>>
             remaining.remove(node);
 
             Graph<T> newGraph = new Graph<>();
+
+            if (newGraphs != null)
+                newGraphs.add(newGraph);
+
             while (succ.size() > 0)
             {
                 Node<T> c = succ.poll();
@@ -469,13 +476,16 @@ public class Graph<T extends Mergeable<T>>
                 c.getObject().setGraph(newGraph);
             }
 
-            // Split the context across both graphs.
-            if (contextData != null) {
-                newGraph.contextData = contextData.splitFor(newGraph, this);
-                contextData = contextData.splitFor(this, newGraph);
+            verify();
+        }
+
+        if (newGraphs != null)
+        {
+            for (var graph : newGraphs) {
+                graph.contextData = contextData.splitFor(graph.nodeList.size(), nodeCount);
             }
 
-            verify();
+            contextData = contextData.splitFor(nodeList.size(), nodeCount);
         }
 
         verify();
