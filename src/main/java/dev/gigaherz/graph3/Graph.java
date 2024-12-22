@@ -481,11 +481,16 @@ public class Graph<T extends Mergeable<T>>
 
         if (newGraphs != null)
         {
-            for (var graph : newGraphs) {
-                graph.contextData = contextData.splitFor(graph.nodeList.size(), nodeCount);
+            int graphCount = newGraphs.size() + 1;
+
+            for (int i = 0; i < newGraphs.size(); i++)
+            {
+                var graph = newGraphs.get(i);
+
+                graph.contextData = contextData.splitFor(graph.nodeList.size(), nodeCount, i, graphCount);
             }
 
-            contextData = contextData.splitFor(nodeList.size(), nodeCount);
+            contextData = contextData.splitFor(nodeList.size(), nodeCount, graphCount - 1, graphCount);
         }
 
         verify();
