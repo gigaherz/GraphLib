@@ -107,7 +107,7 @@ public class Graph<T extends Mergeable<T>>
         }
 
         Graph<T> target;
-        if (otherGraphs.size() > 0)
+        if (!otherGraphs.isEmpty())
         {
             target = otherGraphs.iterator().next();
         }
@@ -389,8 +389,7 @@ public class Graph<T extends Mergeable<T>>
 
     private void splitAfterRemoval()
     {
-        int nodeCount = nodeList.size();
-        if (nodeCount == 0)
+        if (nodeList.isEmpty())
             return;
 
         Set<Node<T>> remaining = Sets.newHashSet(nodeList);
@@ -404,7 +403,7 @@ public class Graph<T extends Mergeable<T>>
 
         // First mark the ones that will remain in this graph
         // so that there are only new graphs created if needed
-        while (succ.size() > 0)
+        while (!succ.isEmpty())
         {
             Node<T> c = succ.poll();
             for (Node<T> n : neighbours.get(c))
@@ -427,10 +426,10 @@ public class Graph<T extends Mergeable<T>>
             }
         }
 
-        List<Graph<T>> newGraphs = contextData != null ? new ArrayList<>() : null;
+        List<Graph<T>> newGraphs = null;
 
         // If anything remains unseen, it means it's on a disconnected subgraph
-        while (remaining.size() > 0)
+        while (!remaining.isEmpty())
         {
             node = remaining.iterator().next();
             succ.add(node);
@@ -439,10 +438,14 @@ public class Graph<T extends Mergeable<T>>
 
             Graph<T> newGraph = new Graph<>();
 
-            if (newGraphs != null)
+            if (contextData != null)
+            {
+                if (newGraphs == null)
+                    newGraphs = new ArrayList<>();
                 newGraphs.add(newGraph);
+            }
 
-            while (succ.size() > 0)
+            while (!succ.isEmpty())
             {
                 Node<T> c = succ.poll();
                 for (Node<T> n : neighbours.get(c))
@@ -476,21 +479,12 @@ public class Graph<T extends Mergeable<T>>
                 c.getObject().setGraph(newGraph);
             }
 
-            verify();
+            newGraph.verify();
         }
 
         if (newGraphs != null)
         {
-            int graphCount = newGraphs.size() + 1;
-
-            for (int i = 0; i < newGraphs.size(); i++)
-            {
-                var graph = newGraphs.get(i);
-
-                graph.contextData = contextData.splitFor(graph.nodeList.size(), nodeCount, i, graphCount);
-            }
-
-            contextData = contextData.splitFor(nodeList.size(), nodeCount, graphCount - 1, graphCount);
+            contextData.setContextAfterSplit(contextData,this, newGraphs);
         }
 
         verify();
