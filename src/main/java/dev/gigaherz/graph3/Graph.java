@@ -33,9 +33,10 @@ public class Graph<T extends Mergeable<T>>
         Graph<T> graph1 = object1.getGraph();
         Graph<T> graph2 = object2.getGraph();
 
-        Graph<T> target = graph1;
+        Graph<T> target;
         if (graph1 != null && graph2 != null)
         {
+            target = graph1;
             if (graph1 != graph2)
             {
                 graph1.mergeWith(graph2);
@@ -43,6 +44,7 @@ public class Graph<T extends Mergeable<T>>
         }
         else if(graph1 != null)
         {
+            target = graph1;
             graph1.addNode(object2);
         }
         else if(graph2 != null)
@@ -53,10 +55,10 @@ public class Graph<T extends Mergeable<T>>
         else
         {
             target = graphFactory.get();
-            if (contextDataFactory != null)
-                target.contextData = contextDataFactory.create(target);
             target.addNode(object1);
             target.addNode(object2);
+            if (contextDataFactory != null)
+                target.contextData = contextDataFactory.create(target);
         }
 
         target.addSingleEdge(object1, object2);
@@ -498,10 +500,10 @@ public class Graph<T extends Mergeable<T>>
         reverseNeighbours.putAll(graph.reverseNeighbours);
 
         for (Node<T> n : graph.nodeList)
-        { n.getObject().setGraph(this); }
+            n.getObject().setGraph(this);
 
         if (contextData != null && graph.contextData != null)
-            contextData = contextData.mergeWith(graph.contextData);
+            contextData = contextData.mergeWith(graph.contextData, this);
         else if(graph.contextData != null)
             contextData = graph.contextData;
 

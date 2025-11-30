@@ -1,7 +1,10 @@
-apply plugin: 'maven-publish'
-apply plugin: 'java'
+plugins {
+    id 'java'
+    id 'java-library'
+    id 'maven-publish'
+}
 
-version = "3.1.0"
+version = "3.2.0"
 group= "dev.gigaherz.graph" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 ext {
     archivesBaseName = "GraphLib3"
@@ -13,6 +16,21 @@ repositories {
 dependencies {
     compileOnly 'org.jetbrains:annotations:20.1.0'
     implementation 'com.google.guava:guava:32.1.2-jre'
+}
+
+sourceSets {
+    bench {
+        java {
+            compileClasspath += sourceSets.main.compileClasspath
+            compileClasspath += sourceSets.main.output
+            runtimeClasspath += sourceSets.main.runtimeClasspath
+            runtimeClasspath += sourceSets.main.output
+        }
+    }
+}
+
+configurations {
+    benchImplementation.extendsFrom implementation
 }
 
 java {
